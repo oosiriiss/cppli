@@ -1,3 +1,5 @@
+#pragma once
+#include "option.hpp"
 #include <expected>
 #include <optional>
 #include <span>
@@ -24,9 +26,6 @@ struct Value {
 };
 
 using Argument = std::variant<ShortOption, MultiShortOption, LongOption, Value>;
-using ShortOptions = std::unordered_map<char, Option>;
-using LongOptions = std::unordered_map<std::string_view, Option>;
-
 class ArgvParser {
 
 public:
@@ -35,8 +34,7 @@ public:
   // Tries to match an option from argv
   // Maps (really just the option) are only altered if an option is matched and
   // it's raw_value is set.
-  std::optional<Option> MatchOption(ShortOptions &shortOptions,
-                                    LongOptions &longOptions);
+  std::optional<Option> MatchOptions(OptionStorage &options);
 
 private:
   // Parses the option
@@ -48,14 +46,14 @@ private:
   // successfully. Cannot be const, because it may read next argv if option has
   // argument
   std::optional<Option> ParseShort(const ShortOption &opt,
-                                   ShortOptions &shortOptions);
+                                   OptionStorage &shortOptions);
 
   // Actual parsing is done by ArgvParser::Parse
   // Maps (really just the option) are only altered if an option is matched
   // successfully. Cannot be const, because it may read next argv if option has
   // argument
   std::optional<Option> ParseLong(const LongOption &opt,
-                                  LongOptions &longOptions);
+                                  OptionStorage &longOptions);
 
   // Chains of short options e.g. -abcdefg
   // If any option expects a value this method immediately returns nullopt as it
@@ -65,7 +63,7 @@ private:
   // the option) are only altered if an option is matched successfully. Cannot
   // be const, because it may read next argv if option has argument
   std::optional<Option> ParseMultiShort(const MultiShortOption &opts,
-                                        ShortOptions &shortOptions);
+                                        OptionStorage &shortOptions);
 
   // This reads the next argv and returns it if it is a value
   // TODO :: I mean this looks like a perfect usage for std::expected, but i

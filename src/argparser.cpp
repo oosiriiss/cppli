@@ -1,5 +1,5 @@
 #include "argparser.hpp"
-#include "cli.hpp"
+#include <iostream>
 #include <optional>
 #include <print>
 #include <stdexcept>
@@ -8,7 +8,7 @@
 namespace cli {
 
 ArgvParser::ArgvParser(std::span<std::string_view> raw_args)
-    : argv(raw_args), arg_index(0) {}
+    : argv(raw_args), arg_index(1) {}
 
 // Nice visitor util
 template <class... Ts> struct visitor : Ts... {
@@ -16,34 +16,30 @@ template <class... Ts> struct visitor : Ts... {
 };
 template <class... Ts> visitor(Ts...) -> visitor<Ts...>;
 
-std::optional<Option> ArgvParser::MatchOption(ShortOptions &shortOptions,
-                                              LongOptions &longOptions) {
+std::optional<Option> ArgvParser::MatchOptions(OptionStorage &options) {
 
   auto argOpt = ReadArg();
   if (!argOpt) {
-    std::println("Readarg failed");
     return std::nullopt;
   }
 
-  std::println("an option was matched");
 
   auto arg = *argOpt;
 
   return std::visit(
       visitor{
-          [this,
-           &shortOptions](const ShortOption &opt) -> std::optional<Option> {
+          [this, &options](const ShortOption &opt) -> std::optional<Option> {
             std::println("Matched short {}", opt.opt);
-            return ParseShort(opt, shortOptions);
+            return ParseShort(opt, options);
           },
-          [this, &shortOptions](
-              const MultiShortOption &opt) -> std::optional<Option> {
+          [this,
+           &options](const MultiShortOption &opt) -> std::optional<Option> {
             std::println("Matched multishort {}", opt.opts);
-            return ParseMultiShort(opt, shortOptions);
+            return ParseMultiShort(opt, options);
           },
-          [this, &longOptions](const LongOption &opt) -> std::optional<Option> {
+          [this, &options](const LongOption &opt) -> std::optional<Option> {
             std::println("Matched long {}", opt.opt);
-            return ParseLong(opt, longOptions);
+            return ParseLong(opt, options);
           },
           [this](const Value &opt) -> std::optional<Option> {
             std::println("V {}", opt.val);
@@ -60,34 +56,30 @@ std::optional<Option> ArgvParser::Parse(Option &opt) {
     if (!expectedValue)
       return std::nullopt;
     Value value = *expectedValue;
-    opt.raw_value = value.val;
+    opt.rawValue = value.val;
   }
   return opt;
 }
 
 std::optional<Option> ArgvParser::ParseShort(const ShortOption &opt,
-                                             ShortOptions &shortOptions) {
+                                             OptionStorage &options) {
 
-  auto it = shortOptions.find(opt.opt);
-  if (it == shortOptions.end())
-    return std::nullopt;
-
-  Option &option = it->second;
-  return Parse(option);
+  if (options.Contains(opt.opt)) {
+    return Parse(options[opt.opt]);
+  }
+  return std::nullopt;
 }
 std::optional<Option> ArgvParser::ParseLong(const LongOption &opt,
-                                            LongOptions &longOptions) {
+                                            OptionStorage &options) {
 
-  auto it = longOptions.find(opt.opt);
-  if (it == longOptions.end())
-    return std::nullopt;
-
-  Option &option = it->second;
-  return Parse(option);
+  if (options.Contains(opt.opt)) {
+    return Parse(options[opt.opt]);
+  }
+  return std::nullopt;
 }
 
 std::optional<Option> ArgvParser::ParseMultiShort(const MultiShortOption &opts,
-                                                  ShortOptions &shortOptions) {
+                                                  OptionStorage &options) {
 
   // I will implement some sort of parsing the argv by each char so that i won't
   // have to return std::vector or something from here.
@@ -98,16 +90,13 @@ std::optional<Option> ArgvParser::ParseMultiShort(const MultiShortOption &opts,
   // mutating only a portion of the options before encountering invalid one.
   // And as a bonus it immediately detects any invalid args.
   for (char arg : opts.opts) {
-    auto it = shortOptions.find(arg);
-    if (it == shortOptions.end() || it->second.expectsArgument)
+    if (!options.Contains(arg) || options[arg].expectsArgument)
       return std::nullopt;
   }
 
   // Real loop
   for (char arg : opts.opts) {
-    auto it = shortOptions.find(arg);
-    if (it == shortOptions.end() || it->second.expectsArgument)
-      return std::nullopt;
+    Option &opt = options[arg];
   }
 }
 
@@ -129,8 +118,7 @@ std::optional<Argument> ArgvParser::ReadArg() {
   if (arg_index >= argv.size())
     return std::nullopt;
 
-  ++arg_index;
-  std::string_view arg = argv[arg_index];
+  std::string_view arg = argv[arg_index++];
 
   if (arg.starts_with("--")) {
     if (arg.size() <= 2)
