@@ -18,9 +18,7 @@ void App::Run(const int argc, const char *const *const argv) {
   while (auto optional = parser.MatchOptions(options_)) {
 
     (*optional).Matched();
-
   }
-
 }
 
 void App::PrintHelp() const {

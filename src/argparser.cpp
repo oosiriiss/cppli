@@ -23,7 +23,6 @@ std::optional<Option> ArgvParser::MatchOptions(OptionStorage &options) {
     return std::nullopt;
   }
 
-
   auto arg = *argOpt;
 
   return std::visit(
@@ -53,8 +52,9 @@ std::optional<Option> ArgvParser::MatchOptions(OptionStorage &options) {
 std::optional<Option> ArgvParser::Parse(Option &opt) {
   if (opt.expectsArgument) {
     auto expectedValue = ReadExpectValue();
-    if (!expectedValue)
+    if (!expectedValue) {
       return std::nullopt;
+    }
     Value value = *expectedValue;
     opt.rawValue = value.val;
   }
@@ -110,6 +110,8 @@ std::optional<Value> ArgvParser::ReadExpectValue() {
   if (auto value = std::get_if<Value>(&arg)) {
     return *value;
   } else {
+    // Another value enocuntered - reverting arg index
+    --arg_index;
     return std::nullopt;
   }
 }

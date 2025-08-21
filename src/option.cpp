@@ -1,16 +1,14 @@
 #include "option.hpp"
 #include <format>
+#include <functional>
+#include <optional>
 #include <stdexcept>
 
 namespace cli {
-Option::Option(const std::string description, bool expectsArgument,
-               std::optional<OptionCallback> callback)
-    : description(description), expectsArgument(expectsArgument), rawValue(""),
-      callback_(callback) {}
 
 void Option::Matched() const {
-  if (callback_ && rawValue) {
-    (*callback_)(*rawValue);
+  if (callback) {
+    (*callback)(rawValue);
   }
 }
 

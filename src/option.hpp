@@ -1,15 +1,15 @@
 #pragma once
+#include <any>
 #include <functional>
 #include <optional>
 #include <string>
 
 namespace cli {
-class Option {
+struct Option {
 
   // Function used when calling an option's callback
-  using OptionCallback = std::function<void(std::string_view)>;
+  using OptionCallback = std::function<void(std::optional<std::string_view>)>;
 
-public:
   struct Identifier {
     // Short name for the option like -h (But without the dash '-')
     char shortName;
@@ -18,32 +18,36 @@ public:
     // TODO :: string_view?
     std::string_view longName;
   };
-  // Gets called when option is used in App args.
+
+  template <typename T> struct Params {
+
+    std::optional<std::string_view> description = std::nullopt;
+
+    std::optional<T> defaultValue = std::nullopt;
+
+    // TODO :: Hm this could be made std::invocable
+    std::optional<std::function<void(T)>> callback = std::nullopt;
+  };
+
+  // Gets called after and option is discovered from argv.
+  // If rawValue is std::nullopt then the default value will be used.
   void Matched() const;
 
-  // Short name should  be a letter like h. It will react -h option.
-  // Long name should  be a String like help. It will react to --help option.
-  // Description should be a string describing what does this option do.
-  Option(const std::string description, bool expectsArgument,
-         std::optional<OptionCallback> callback = std::nullopt);
-
-public:
   // Mostly kept here for printing purposes, but since its relative light it
   // should matter too much
-  Identifier identifier;
+  // Identifier identifier;
 
   // Description of what the option is used for.
-  const std::string_view description;
+  std::string_view description;
 
   // Decides whether this option has an argument
-  const bool expectsArgument;
+  bool expectsArgument;
 
   // Raw string value of the arugment;
   std::optional<std::string_view> rawValue = std::nullopt;
 
-private:
   // Callback invoked when argument is discovered in the argv
-  const std::optional<OptionCallback> callback_ = std::nullopt;
+  std::optional<OptionCallback> callback = std::nullopt;
 };
 
 class OptionStorage {

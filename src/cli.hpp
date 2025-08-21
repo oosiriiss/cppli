@@ -2,6 +2,7 @@
 
 #include <any>
 #include <stdexcept>
+#include <type_traits>
 #include <typeindex>
 #include <unordered_map>
 
@@ -27,9 +28,8 @@ public:
   // Throws std::invalid_argument if it encounters option with long name
   // beggining from '-' or '--'
   // name.
-  template <typename T, typename F>
-    requires std::invocable<F, T>
-  void AddOption(Option::Identifier &&ident, F &&callback);
+  template <typename T>
+  void AddOption(Option::Identifier &&id, Option::Params<T> &&params);
   // Registering custom type convreter from std::string_view
   template <typename T> void RegisterConverter(ConverterFn &&converter);
   // For now only short name querying is avaialable since it is used as a
@@ -60,15 +60,33 @@ private:
   std::unordered_map<std::type_index, ConverterFn> custom_parsers_;
 };
 
-template <typename T, typename F>
-  requires std::invocable<F, T>
-void App::AddOption(Option::Identifier &&id, F &&callback) {
-  Option o = Option(
-      "DESC", true,
-      [this, callback = std::move(callback)](std::string_view raw_value) {
-        T val = convert<T>(raw_value);
-        std::invoke(callback, std::move(val));
-      });
+template <typename T>
+void App::AddOption(Option::Identifier &&id, Option::Params<T> &&params) {
+  Option o{
+      .description = params.description.value_or(""),
+      .expectsArgument = !std::is_void<T>(),
+      .rawValue = std::nullopt,
+      .callback =
+          (params.callback) ? std::optional([this,
+                                             def =
+                                                 std::move(params.defaultValue),
+                                             callback =
+                                                 std::move(*params.callback)](
+                                                std::optional<std::string_view>
+                                                    raw_value) {
+            if (raw_value) {
+              T val = convert<T>(*raw_value);
+              std::invoke(callback, std::move(val));
+            } else if (def) {
+              std::invoke(callback, std::move(*def));
+            } else {
+              throw std::logic_error(
+                  "No value and no default value whn invoking a callback");
+            }
+          })
+                            : std::nullopt,
+  };
+
   options_.Add(std::move(id), std::move(o));
 }
 
