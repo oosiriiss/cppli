@@ -1,2 +1,1 @@
-# testpp
-C++ Testing library
+# CppLI - C++ CLI App building library
