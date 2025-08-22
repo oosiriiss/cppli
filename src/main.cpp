@@ -1,4 +1,5 @@
 #include "cli.hpp"
+#include "logging.hpp"
 #include "option.hpp"
 #include <print>
 #include <string_view>
@@ -25,7 +26,7 @@ int main(int argc, const char *const *const argv) {
                      });
   app.Run(argc, argv);
 
-  std::println("Ligma is: {}", ligma);
+  CPPLI_LOG_DEBUG("Test log!");
 
   return 0;
 }
