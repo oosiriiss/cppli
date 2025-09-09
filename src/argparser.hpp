@@ -1,77 +1,79 @@
 #pragma once
-#include "option.hpp"
-#include <expected>
 #include <optional>
 #include <span>
-#include <string_view>
-#include <unordered_map>
 #include <variant>
 
-namespace cli {
-struct Option;
+#include "cppli/option.hpp"
 
-struct ShortOption {
-  char opt;
-};
-struct MultiShortOption {
-  std::string_view opts;
-};
+namespace cppli {
+  struct Option;
 
-struct LongOption {
-  std::string_view opt;
-};
+  struct ShortOption {
+    char opt;
+  };
 
-struct Value {
-  std::string_view val;
-};
+  struct MultiShortOption {
+    std::string_view opts;
+  };
 
-using Argument = std::variant<ShortOption, MultiShortOption, LongOption, Value>;
-class ArgvParser {
+  struct LongOption {
+    std::string_view opt;
+  };
 
-public:
-  ArgvParser(std::span<std::string_view> argv);
+  struct Value {
+    std::string_view val;
+  };
 
-  // Tries to match an option from argv
-  // Maps (really just the option) are only altered if an option is matched and
-  // it's raw_value is set.
-  std::optional<Option> MatchOptions(OptionStorage &options);
+  using Argument =
+      std::variant<ShortOption, MultiShortOption, LongOption, Value>;
 
-private:
-  // Parses the option
-  // Cannot be const, because it may read next argv if option has argument
-  std::optional<Option> Parse(Option &opt);
+  class ArgvParser {
+   public:
+    explicit ArgvParser(std::span<std::string_view> argv);
 
-  // Actual parsing is done by ArgvParser::Parse
-  // Maps (really just the option) are only altered if an option is matched
-  // successfully. Cannot be const, because it may read next argv if option has
-  // argument
-  std::optional<Option> ParseShort(const ShortOption &opt,
-                                   OptionStorage &shortOptions);
+    // Tries to match an option from argv
+    // Maps (really just the option) are only altered if an option is matched
+    // and it's raw_value is set.
+    std::optional<Option> MatchOptions(OptionStorage& options);
 
-  // Actual parsing is done by ArgvParser::Parse
-  // Maps (really just the option) are only altered if an option is matched
-  // successfully. Cannot be const, because it may read next argv if option has
-  // argument
-  std::optional<Option> ParseLong(const LongOption &opt,
-                                  OptionStorage &longOptions);
+   private:
+    // Parses the option
+    // Cannot be const, because it may read next argv if option has argument
+    std::optional<Option> Parse(Option& opt);
 
-  // Chains of short options e.g. -abcdefg
-  // If any option expects a value this method immediately returns nullopt as it
-  // is not supported (yet? idk how would that even work and it would be
-  // confusing).
-  // Actual parsing is done by ArgvParser::Parse Maps (really just
-  // the option) are only altered if an option is matched successfully. Cannot
-  // be const, because it may read next argv if option has argument
-  std::optional<Option> ParseMultiShort(const MultiShortOption &opts,
-                                        OptionStorage &shortOptions);
+    // Actual parsing is done by ArgvParser::Parse
+    // Maps (really just the option) are only altered if an option is matched
+    // successfully. Cannot be const, because it may read next argv if option
+    // has argument
+    std::optional<Option> ParseShort(const ShortOption& opt,
+                                     OptionStorage& options);
 
-  // This reads the next argv and returns it if it is a value
-  // TODO :: I mean this looks like a perfect usage for std::expected, but i
-  // didn't had any meaningful errors returned as i was writing this.
-  std::optional<Value> ReadExpectValue();
-  std::optional<Argument> ReadArg();
-  std::span<std::string_view> argv;
-  size_t arg_index;
-};
+    // Actual parsing is done by ArgvParser::Parse
+    // Maps (really just the option) are only altered if an option is matched
+    // successfully. Cannot be const, because it may read next argv if option
+    // has argument
+    std::optional<Option> ParseLong(const LongOption& opt,
+                                    OptionStorage& options);
 
-} // namespace cli
+    // Chains of short options e.g. -abcdefg
+    // If any option expects a value this method immediately returns nullopt as
+    // it is not supported (yet? idk how would that even work and it would be
+    // confusing).
+    // Actual parsing is done by ArgvParser::Parse Maps (really just
+    // the option) are only altered if an option is matched successfully. Cannot
+    // be const, because it may read next argv if option has argument
+    static std::optional<Option> ParseMultiShort(const MultiShortOption& opts,
+                                                 OptionStorage& options);
+
+    // This reads the next argv and returns it if it is a value
+    // TODO :: I mean this looks like a perfect usage for std::expected, but i
+    // didn't had any meaningful errors returned as i was writing this.
+    std::optional<Value> ReadExpectValue();
+    std::optional<Argument> ReadArg();
+    std::span<std::string_view> argv_;
+    // Index of the currently read argument.
+    // Starts from 1 to skip the program name.
+    size_t argIndex_ = 1;
+  };
+
+}  // namespace cppli

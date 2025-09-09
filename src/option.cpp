@@ -1,56 +1,55 @@
-#include "option.hpp"
+#include "cppli/option.hpp"
+
 #include <format>
 #include <functional>
 #include <optional>
 #include <stdexcept>
 
-namespace cli {
+namespace cppli {
 
-void Option::Matched() const {
-  if (callback) {
-    (*callback)(rawValue);
-  }
-}
-
-void OptionStorage::Add(Option::Identifier &&identifier, Option &&opt) {
-
-  if (longIndexMap_.contains(identifier.longName)) {
-    throw std::logic_error(std::format("Duplicated long option \"{}\" found.",
-                                       identifier.longName));
-  }
-  if (shortIndexMap_.contains(identifier.shortName)) {
-    throw std::logic_error(std::format("Duplicated short option \"{}\" found.",
-                                       identifier.shortName));
+  void Option::Matched() const {
+    if (callback) {
+      (*callback)(rawValue);
+    }
   }
 
-  const size_t index = options_.size();
+  void OptionStorage::Add(const Option::Identifier& identifier, Option&& opt) {
+    if (longIndexMap_.contains(identifier.longName)) {
+      throw std::logic_error(std::format("Duplicated long option \"{}\" found.",
+                                         identifier.longName));
+    }
+    if (shortIndexMap_.contains(identifier.shortName)) {
+      throw std::logic_error(std::format(
+          "Duplicated short option \"{}\" found.", identifier.shortName));
+    }
 
-  options_.emplace_back(std::move(opt));
+    const size_t index = options_.size();
 
-  shortIndexMap_.emplace(std::move(identifier.shortName), index);
-  longIndexMap_.emplace(std::move(identifier.longName), index);
-}
+    options_.emplace_back(std::move(opt));
 
-bool OptionStorage::Contains(char shortOption) const {
-  return shortIndexMap_.contains(shortOption);
-}
+    shortIndexMap_.emplace(identifier.shortName, index);
+    longIndexMap_.emplace(identifier.longName, index);
+  }
 
-bool OptionStorage::Contains(std::string_view longOption) const {
-  return longIndexMap_.contains(longOption);
-}
+  bool OptionStorage::Contains(char shortOption) const {
+    return shortIndexMap_.contains(shortOption);
+  }
 
-bool OptionStorage::Contains(const Option::Identifier &identifier) const {
-  return Contains(identifier.shortName) || Contains(identifier.longName);
-}
+  bool OptionStorage::Contains(std::string_view longOption) const {
+    return longIndexMap_.contains(longOption);
+  }
 
-Option &OptionStorage::operator[](char shortOption) {
+  bool OptionStorage::Contains(const Option::Identifier& identifier) const {
+    return Contains(identifier.shortName) || Contains(identifier.longName);
+  }
 
-  int index = shortIndexMap_[shortOption];
-  return options_[index];
-}
-Option &OptionStorage::operator[](std::string_view longOption) {
+  Option& OptionStorage::operator[](char shortOption) {
+    size_t index = shortIndexMap_[shortOption];
+    return options_[index];
+  }
 
-  int index = longIndexMap_[longOption];
-  return options_[index];
-}
-} // namespace cli
+  Option& OptionStorage::operator[](std::string_view longOption) {
+    size_t index = longIndexMap_[longOption];
+    return options_[index];
+  }
+}  // namespace cppli

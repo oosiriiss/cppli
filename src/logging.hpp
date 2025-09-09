@@ -1,12 +1,12 @@
 #pragma once
 
-#include <format>
-#include <optional>
-#include <utility>
 
 //
 
 #ifdef CPPLI_ENABLE_LOG
+#include <format>
+#include <optional>
+#include <utility>
 #include <print>
 #include <string_view>
 
