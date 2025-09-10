@@ -1,4 +1,6 @@
 #pragma once
+#include <any>
+#include <cstddef>
 #include <functional>
 #include <optional>
 #include <string_view>
@@ -89,6 +91,9 @@ namespace cppli {
     // Raw string value of the arugment;
     std::optional<std::string_view> rawValue = std::nullopt;
 
+    // Default value used if option is use but without value argument
+    std::any defaultValue;
+
     // Callback invoked when argument is discovered in the argv
     std::optional<OptionCallback> callback = std::nullopt;
   };
@@ -101,8 +106,10 @@ namespace cppli {
     bool Contains(std::string_view longOption) const;
     bool Contains(const Option::Identifier& identifier) const;
 
-    Option& operator[](char shortOption);
-    Option& operator[](std::string_view longOption);
+    Option& Get(char shortOption);
+    Option& Get(std::string_view longOption);
+    const Option& Get(char shortOption) const;
+    const Option& Get(std::string_view longOption) const;
 
    private:
     char ConvertLongToShort(std::string_view longOption) const;

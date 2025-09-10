@@ -8,6 +8,7 @@
 #include <variant>
 
 #include "cppli/option.hpp"
+#include "logging.hpp"
 
 namespace cppli {
 
@@ -33,12 +34,21 @@ namespace cppli {
     return std::visit(
         Visitor{
             [this, &options](const ShortOption &opt) -> std::optional<Option> {
-              std::println("Matched short {}", opt.opt);
-              return ParseShort(opt, options);
+              CPPLI_LOG_DEBUG(
+                  "ArgvParser::MatchOptions | Matched Short Option: {}",
+                  opt.opt);
+
+              if (ParseShort(opt, options)) {
+                return options.Get(opt.opt);
+              }
+              return std::nullopt;
             },
             [this, &options](const LongOption &opt) -> std::optional<Option> {
               std::println("Matched long {}", opt.opt);
-              return ParseLong(opt, options);
+              if (ParseLong(opt, options)) {
+                return options.Get(opt.opt);
+              }
+              return std::nullopt;
             },
             [&options](const MultiShortOption &opt) -> std::optional<Option> {
               std::println("Matched multishort {}", opt.opts);
@@ -53,31 +63,31 @@ namespace cppli {
         arg);
   }
 
-  std::optional<Option> ArgvParser::Parse(Option &opt) {
+  bool ArgvParser::Parse(Option &opt) {
     if (opt.expectsArgument) {
       auto expectedValue = ReadExpectValue();
-      if (!expectedValue) {
-        return std::nullopt;
+      if (expectedValue) {
+        const Value value = *expectedValue;
+        opt.rawValue = value.val;
+      } else if (!opt.defaultValue.has_value()) {
+        return false;
       }
-      const Value value = *expectedValue;
-      opt.rawValue = value.val;
     }
-    return opt;
+    return true;
   }
 
-  std::optional<Option> ArgvParser::ParseShort(const ShortOption &opt,
-                                               OptionStorage &options) {
+  bool ArgvParser::ParseShort(const ShortOption &opt, OptionStorage &options) {
     if (options.Contains(opt.opt)) {
-      return Parse(options[opt.opt]);
+      return Parse(options.Get(opt.opt));
     }
-    return std::nullopt;
+    return false;
   }
-  std::optional<Option> ArgvParser::ParseLong(const LongOption &opt,
-                                              OptionStorage &options) {
+
+  bool ArgvParser::ParseLong(const LongOption &opt, OptionStorage &options) {
     if (options.Contains(opt.opt)) {
-      return Parse(options[opt.opt]);
+      return Parse(options.Get(opt.opt));
     }
-    return std::nullopt;
+    return false;
   }
 
   std::optional<Option> ArgvParser::ParseMultiShort(
@@ -91,7 +101,7 @@ namespace cppli {
     // mutating only a portion of the options before encountering invalid one.
     // And as a bonus it immediately detects any invalid args.
     for (const char arg : opts.opts) {
-      if (!options.Contains(arg) || options[arg].expectsArgument) {
+      if (!options.Contains(arg) || options.Get(arg).expectsArgument) {
         return std::nullopt;
       }
     }

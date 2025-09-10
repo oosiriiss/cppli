@@ -1,6 +1,8 @@
 #pragma once
 
 #include <any>
+#include <optional>
+#include <print>
 #include <stdexcept>
 #include <type_traits>
 #include <typeindex>
@@ -76,10 +78,13 @@ namespace cppli {
                    const Option::Params<T> &params);
     // Registering custom type convreter from std::string_view
     template <typename T>
-    void RegisterConverter(ConverterFn &&converter);
-    // For now only short name querying is avaialable since it is used as a
-    // key in the hashmap
-    std::optional<const Option &> GetOption(std::string_view shortName) const;
+    void RegisterConverter(std::function<T(std::string_view)> &&converter);
+
+    template <typename T>
+    std::optional<T> GetOptionValue(char shortName) const;
+
+    template <typename T>
+    std::optional<T> GetOptionValue(std::string_view longName) const;
 
     // Automatically generates the help message from the options
     void PrintHelp() const;
@@ -90,18 +95,21 @@ namespace cppli {
 
    private:
     template <typename T>
-    T Convert(std::string_view rawValue);
+    T Convert(std::string_view rawValue) const;
 
    private:
     // Name of the application
     std::string_view title_;
+
     // Short (not necessarily :) ) description of the application
     std::string_view description_;
+
     // String encoded version of the application
     std::string_view version_;
 
     // Registered options
     OptionStorage options_;
+
     // Custom parsers for options
     std::unordered_map<std::type_index, ConverterFn> customParsers_;
   };
@@ -113,6 +121,8 @@ namespace cppli {
         .description = params.description.value_or(""),
         .expectsArgument = !std::is_void<T>(),
         .rawValue = std::nullopt,
+        .defaultValue =
+            (params.defaultValue) ? *params.defaultValue : std::any(),
         .callback = (params.callback) ? std::optional([this,
                                                        def = std::move(
                                                            params.defaultValue),
@@ -122,9 +132,11 @@ namespace cppli {
                                                               std::string_view>
                                                               rawValue) {
           if (rawValue) {
+            std::println("Raw Value: {}", *rawValue);
             T val = Convert<T>(*rawValue);
             std::invoke(callback, std::move(val));
           } else if (def) {
+            std::println("Default opotion invoked");
             std::invoke(callback, std::move(*def));
           } else {
             throw std::logic_error(
@@ -138,19 +150,71 @@ namespace cppli {
   }
 
   template <typename T>
-  void App::RegisterConverter(ConverterFn &&converter) {
+  void App::RegisterConverter(std::function<T(std::string_view)> &&converter) {
     customParsers_[std::type_index(typeid(T))] =
         [convert = std::move(converter)](std::string_view rawValue) {
           return std::any(convert(rawValue));
         };
   }
+
   template <typename T>
-  T App::Convert(std::string_view rawValue) {
-    auto iter = customParsers_.find(std::type_index(typeid(T)));
-    if (iter != customParsers_.end()) {
-      return std::any_cast<T>(iter->second(rawValue));
+  T App::Convert(std::string_view rawValue) const {
+    // TODO :: Default converters for basic types
+    if constexpr (std::is_same_v<T, std::string_view>) {
+      return rawValue;
     }
-    throw std::logic_error("Default converters not yet implemented");
+
+    auto iter = customParsers_.find(std::type_index(typeid(T)));
+    if (iter == customParsers_.end()) {
+      throw std::logic_error("Default converters not yet implemented");
+    }
+    auto &converter = iter->second;
+    return std::any_cast<T>(converter(rawValue));
+  }
+
+  template <typename T>
+  std::optional<T> App::GetOptionValue(char shortName) const {
+    // TODO :: Refactor these duplication
+   //  TODO :: Introduce ?variant? class for identifie rpart so i dont have to duplicat estuff
+    if (!options_.Contains(shortName)) {
+      return std::nullopt;
+    }
+
+    const Option &option = options_.Get(shortName);
+
+    if (!option.rawValue) {
+      if (option.defaultValue.has_value()) {
+        std::println("Defaul value:");
+        return std::any_cast<T>(option.defaultValue);
+      }
+      return std::nullopt;
+    }
+
+    std::println("ligma");
+    const std::string_view rawValue = *option.rawValue;
+    return std::any_cast<T>(Convert<T>(rawValue));
+  }
+
+  template <typename T>
+  std::optional<T> App::GetOptionValue(std::string_view longName) const {
+    if (!options_.Contains(longName)) {
+      return std::nullopt;
+    }
+
+    const Option &option = options_.Get(longName);
+
+    if (!option.rawValue) {
+      if (option.defaultValue.has_value()) {
+        std::println("Default value:");
+        return std::any_cast<T>(option.defaultValue);
+      }
+      return std::nullopt;
+    }
+
+    std::println("ligma");
+
+    const std::string_view rawValue = *option.rawValue;
+    return std::any_cast<T>(Convert<T>(rawValue));
   }
 
 }  // namespace cppli

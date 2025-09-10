@@ -1,0 +1,8 @@
+1. Introduce C++ 20 module stuff?
+2. allow overload of --help and --version?
+3. Can this App class be made more constexpr?
+4. Split converters into its own file
+5. Maybe option builder pattern would be cool? but idk how would that
+6. Some debug logging mechanism :)
+7. work with default arg types. or maybe it'd just be std::any
+

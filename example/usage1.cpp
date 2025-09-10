@@ -1,43 +1,44 @@
-#include <charconv>
 #include <format>
+#include <optional>
 #include <print>
-#include <stdexcept>
 #include <string_view>
-#include <system_error>
 
 #include "cppli/cppli.hpp"
 #include "cppli/option.hpp"
 
 int main(int argc, const char* const* const argv) {
-  // TODO :: Introduce C++ 20 module stuff?
-  // TODO :: allow overload of --help and --version?
-  // TODO :: Can this App class be made more constexpr?
-  // TODO :: Split converters into its own file
-  // TODO :: Maybe option builder pattern would be cool? but idk how would that
-  // TODO :: Some debug logging mechanism :)
-  // work with default arg types. or maybe it'd just be std::any
-
   cppli::App app("Test App", "v0.1", "Dev app");
 
-  app.RegisterConverter<int>([](std::string_view raw) {
-    int out = 0;
-    const std::from_chars_result result =
-        std::from_chars(raw.data(), raw.data() + raw.length(), out);
-    if (result.ec == std::errc::invalid_argument) {
-      throw std::invalid_argument(std::format("Couldn't parse {} to int", raw));
-    }
-    return out;
-  });
-
-  app.AddOption<int>(
-      {.shortName = 'x', .longName = "XD"},
-      cppli::Option::Params<int>{
-          .description = "Hello",
-          .defaultValue = -69,  // NOLINT
+  app.AddOption<std::string_view>(
+      // Shortname is an argument used like -n
+      // Longname is an arugemnt used like --name
+      {.shortName = 'n', .longName = "name"},
+      cppli::Option::Params<std::string_view>{
+          .description = "Species a name printed by the program",
+          // Default value used
+          .defaultValue = "This is the value that will be used if option is "
+                          "passed without a value",
+          // Callback invoked right after option is read from argv (After
+          // invokin App::Run)
           .callback =
-              [](int value) { std::println("Argument's value is {}", value); },
+              [](std::string_view value) {
+                std::println("Argument's value is {}", value);
+              },
       });
   app.Run(argc, argv);
+
+  // Or if you do not want to invoke callback immediately you can query for the
+  // value later
+  std::optional<std::string_view> value1 =
+      app.GetOptionValue<std::string_view>('n');
+  std::optional<std::string_view> value2 =
+      app.GetOptionValue<std::string_view>("name");
+  if (value1) {
+    std::println("Argument's (-n) later queried value is: {}", *value1);
+  }
+  if (value2) {
+    std::println("Argument's (--name) later queried value is: {}", *value2);
+  }
 
   return 0;
 }

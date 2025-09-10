@@ -39,21 +39,19 @@ namespace cppli {
    private:
     // Parses the option
     // Cannot be const, because it may read next argv if option has argument
-    std::optional<Option> Parse(Option& opt);
+    bool Parse(Option& opt);
 
     // Actual parsing is done by ArgvParser::Parse
     // Maps (really just the option) are only altered if an option is matched
     // successfully. Cannot be const, because it may read next argv if option
     // has argument
-    std::optional<Option> ParseShort(const ShortOption& opt,
-                                     OptionStorage& options);
+    bool ParseShort(const ShortOption& opt, OptionStorage& options);
 
     // Actual parsing is done by ArgvParser::Parse
     // Maps (really just the option) are only altered if an option is matched
     // successfully. Cannot be const, because it may read next argv if option
     // has argument
-    std::optional<Option> ParseLong(const LongOption& opt,
-                                    OptionStorage& options);
+    bool ParseLong(const LongOption& opt, OptionStorage& options);
 
     // Chains of short options e.g. -abcdefg
     // If any option expects a value this method immediately returns nullopt as
