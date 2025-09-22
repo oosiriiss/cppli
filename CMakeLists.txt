@@ -7,8 +7,15 @@ project(
     VERSION 0.1.0
     DESCRIPTION "C++ CLI Library"
     LANGUAGES CXX
-    # HOMEPAGE_URL " "
 )
+
+include(FetchContent)
+FetchContent_Declare(
+   logzy
+   GIT_REPOSITORY https://github.com/oosiriiss/logzy
+   GIT_TAG 0.1
+)
+FetchContent_MakeAvailable(logzy)
 
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
@@ -17,7 +24,6 @@ include(cmake/variables.cmake)
 
 add_library(
     cppli_cppli
-    src/logging.hpp
     src/argparser.cpp 
     src/cppli.cpp 
     src/option.cpp
@@ -56,6 +62,12 @@ target_include_directories(
     cppli_cppli SYSTEM
     PUBLIC
     "\$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/export>"
+)
+
+target_link_libraries(
+   cppli_cppli
+   PUBLIC
+      logzy::logzy
 )
 
 target_compile_features(cppli_cppli PUBLIC cxx_std_23)

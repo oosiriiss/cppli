@@ -8,7 +8,7 @@
 #include <variant>
 
 #include "cppli/option.hpp"
-#include "logging.hpp"
+#include "logzy/logzy.hpp"
 
 namespace cppli {
 
@@ -34,9 +34,8 @@ namespace cppli {
     return std::visit(
         Visitor{
             [this, &options](const ShortOption &opt) -> std::optional<Option> {
-              CPPLI_LOG_DEBUG(
-                  "ArgvParser::MatchOptions | Matched Short Option: {}",
-                  opt.opt);
+              logzy::info("ArgvParser::MatchOptions | Matched Short Option: {}",
+                          opt.opt);
 
               if (ParseShort(opt, options)) {
                 return options.Get(opt.opt);
@@ -44,18 +43,18 @@ namespace cppli {
               return std::nullopt;
             },
             [this, &options](const LongOption &opt) -> std::optional<Option> {
-              std::println("Matched long {}", opt.opt);
+              logzy::info("Matched long {}", opt.opt);
               if (ParseLong(opt, options)) {
                 return options.Get(opt.opt);
               }
               return std::nullopt;
             },
             [&options](const MultiShortOption &opt) -> std::optional<Option> {
-              std::println("Matched multishort {}", opt.opts);
+              logzy::info("Matched multishort {}", opt.opts);
               return ParseMultiShort(opt, options);
             },
             [](const Value &opt) -> std::optional<Option> {
-              std::println("V {}", opt.val);
+              logzy::info("Matched Value {}", opt.val);
               // Value read without an argument
               return std::nullopt;
             },

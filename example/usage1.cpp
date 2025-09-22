@@ -31,8 +31,10 @@ int main(int argc, const char* const* const argv) {
   // value later
   std::optional<std::string_view> value1 =
       app.GetOptionValue<std::string_view>('n');
+
   std::optional<std::string_view> value2 =
       app.GetOptionValue<std::string_view>("name");
+
   if (value1) {
     std::println("Argument's (-n) later queried value is: {}", *value1);
   }

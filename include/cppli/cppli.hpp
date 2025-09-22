@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <logzy/logzy.hpp>
 #include <optional>
 #include <print>
 #include <stdexcept>
@@ -132,11 +133,11 @@ namespace cppli {
                                                               std::string_view>
                                                               rawValue) {
           if (rawValue) {
-            std::println("Raw Value: {}", *rawValue);
+            logzy::debug("Raw Value: {}", *rawValue);
             T val = Convert<T>(*rawValue);
             std::invoke(callback, std::move(val));
           } else if (def) {
-            std::println("Default opotion invoked");
+            logzy::debug("Default opotion invoked");
             std::invoke(callback, std::move(*def));
           } else {
             throw std::logic_error(
@@ -168,14 +169,15 @@ namespace cppli {
     if (iter == customParsers_.end()) {
       throw std::logic_error("Default converters not yet implemented");
     }
-    auto &converter = iter->second;
+    const auto &converter = iter->second;
     return std::any_cast<T>(converter(rawValue));
   }
 
   template <typename T>
   std::optional<T> App::GetOptionValue(char shortName) const {
     // TODO :: Refactor these duplication
-   //  TODO :: Introduce ?variant? class for identifie rpart so i dont have to duplicat estuff
+    //  TODO :: Introduce ?variant? class for identifie rpart so i dont have to
+    //  duplicat estuff
     if (!options_.Contains(shortName)) {
       return std::nullopt;
     }
@@ -184,13 +186,11 @@ namespace cppli {
 
     if (!option.rawValue) {
       if (option.defaultValue.has_value()) {
-        std::println("Defaul value:");
         return std::any_cast<T>(option.defaultValue);
       }
       return std::nullopt;
     }
 
-    std::println("ligma");
     const std::string_view rawValue = *option.rawValue;
     return std::any_cast<T>(Convert<T>(rawValue));
   }
@@ -205,7 +205,6 @@ namespace cppli {
 
     if (!option.rawValue) {
       if (option.defaultValue.has_value()) {
-        std::println("Default value:");
         return std::any_cast<T>(option.defaultValue);
       }
       return std::nullopt;
