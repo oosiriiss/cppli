@@ -10,13 +10,13 @@
 
 namespace cppli {
 
-  void Option::Matched() const {
+  void Option::matched() const {
     if (callback) {
       (*callback)(rawValue);
     }
   }
 
-  void OptionStorage::Add(const Option::Identifier& identifier, Option&& opt) {
+  void OptionStorage::add(const Option::Identifier& identifier, Option&& opt) {
     if (longIndexMap_.contains(identifier.longName)) {
       throw std::logic_error(std::format("Duplicated long option \"{}\" found.",
                                          identifier.longName));
@@ -34,33 +34,33 @@ namespace cppli {
     longIndexMap_.emplace(identifier.longName, index);
   }
 
-  bool OptionStorage::Contains(char shortOption) const {
+  bool OptionStorage::contains(char shortOption) const {
     return shortIndexMap_.contains(shortOption);
   }
 
-  bool OptionStorage::Contains(std::string_view longOption) const {
+  bool OptionStorage::contains(std::string_view longOption) const {
     return longIndexMap_.contains(longOption);
   }
 
-  bool OptionStorage::Contains(const Option::Identifier& identifier) const {
-    return Contains(identifier.shortName) || Contains(identifier.longName);
+  bool OptionStorage::contains(const Option::Identifier& identifier) const {
+    return contains(identifier.shortName) || contains(identifier.longName);
   }
 
-  const Option& OptionStorage::Get(char shortOption) const {
+  const Option& OptionStorage::get(char shortOption) const {
     const size_t index = shortIndexMap_.at(shortOption);
     return options_.at(index);
   }
 
-  const Option& OptionStorage::Get(std::string_view longOption) const {
+  const Option& OptionStorage::get(std::string_view longOption) const {
     const size_t index = longIndexMap_.at(longOption);
     return options_.at(index);
   }
-  Option& OptionStorage::Get(char shortOption) {
+  Option& OptionStorage::get(char shortOption) {
     const size_t index = shortIndexMap_.at(shortOption);
     return options_.at(index);
   }
 
-  Option& OptionStorage::Get(std::string_view longOption) {
+  Option& OptionStorage::get(std::string_view longOption) {
     const size_t index = longIndexMap_.at(longOption);
     return options_.at(index);
   }

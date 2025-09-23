@@ -1,7 +1,6 @@
 #include "argparser.hpp"
 
 #include <optional>
-#include <print>
 #include <span>
 #include <stdexcept>
 #include <string_view>
@@ -23,8 +22,8 @@ namespace cppli {
   template <class... Ts>
   Visitor(Ts...) -> Visitor<Ts...>;
 
-  std::optional<Option> ArgvParser::MatchOptions(OptionStorage &options) {
-    auto argOpt = ReadArg();
+  std::optional<Option> ArgvParser::matchOptions(OptionStorage &options) {
+    auto argOpt = readArg();
     if (!argOpt) {
       return std::nullopt;
     }
@@ -37,21 +36,21 @@ namespace cppli {
               logzy::info("ArgvParser::MatchOptions | Matched Short Option: {}",
                           opt.opt);
 
-              if (ParseShort(opt, options)) {
-                return options.Get(opt.opt);
+              if (parseShort(opt, options)) {
+                return options.get(opt.opt);
               }
               return std::nullopt;
             },
             [this, &options](const LongOption &opt) -> std::optional<Option> {
               logzy::info("Matched long {}", opt.opt);
-              if (ParseLong(opt, options)) {
-                return options.Get(opt.opt);
+              if (parseLong(opt, options)) {
+                return options.get(opt.opt);
               }
               return std::nullopt;
             },
             [&options](const MultiShortOption &opt) -> std::optional<Option> {
               logzy::info("Matched multishort {}", opt.opts);
-              return ParseMultiShort(opt, options);
+              return parseMultiShort(opt, options);
             },
             [](const Value &opt) -> std::optional<Option> {
               logzy::info("Matched Value {}", opt.val);
@@ -62,9 +61,9 @@ namespace cppli {
         arg);
   }
 
-  bool ArgvParser::Parse(Option &opt) {
+  bool ArgvParser::parse(Option &opt) {
     if (opt.expectsArgument) {
-      auto expectedValue = ReadExpectValue();
+      auto expectedValue = readExpectValut();
       if (expectedValue) {
         const Value value = *expectedValue;
         opt.rawValue = value.val;
@@ -75,21 +74,21 @@ namespace cppli {
     return true;
   }
 
-  bool ArgvParser::ParseShort(const ShortOption &opt, OptionStorage &options) {
-    if (options.Contains(opt.opt)) {
-      return Parse(options.Get(opt.opt));
+  bool ArgvParser::parseShort(const ShortOption &opt, OptionStorage &options) {
+    if (options.contains(opt.opt)) {
+      return parse(options.get(opt.opt));
     }
     return false;
   }
 
-  bool ArgvParser::ParseLong(const LongOption &opt, OptionStorage &options) {
-    if (options.Contains(opt.opt)) {
-      return Parse(options.Get(opt.opt));
+  bool ArgvParser::parseLong(const LongOption &opt, OptionStorage &options) {
+    if (options.contains(opt.opt)) {
+      return parse(options.get(opt.opt));
     }
     return false;
   }
 
-  std::optional<Option> ArgvParser::ParseMultiShort(
+  std::optional<Option> ArgvParser::parseMultiShort(
       const MultiShortOption &opts, OptionStorage &options) {
     // I will implement some sort of parsing the argv by each char so that i
     // won't have to return std::vector or something from here.
@@ -100,7 +99,7 @@ namespace cppli {
     // mutating only a portion of the options before encountering invalid one.
     // And as a bonus it immediately detects any invalid args.
     for (const char arg : opts.opts) {
-      if (!options.Contains(arg) || options.Get(arg).expectsArgument) {
+      if (!options.contains(arg) || options.get(arg).expectsArgument) {
         return std::nullopt;
       }
     }
@@ -111,8 +110,8 @@ namespace cppli {
     //}
   }
 
-  std::optional<Value> ArgvParser::ReadExpectValue() {
-    auto argOpt = ReadArg();
+  std::optional<Value> ArgvParser::readExpectValut() {
+    auto argOpt = readArg();
     if (!argOpt) {
       return std::nullopt;
     }
@@ -127,7 +126,7 @@ namespace cppli {
     return std::nullopt;
   }
 
-  std::optional<Argument> ArgvParser::ReadArg() {
+  std::optional<Argument> ArgvParser::readArg() {
     if (argIndex_ >= argv_.size()) {
       return std::nullopt;
     }

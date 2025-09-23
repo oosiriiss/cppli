@@ -5,11 +5,14 @@
 
 #include "cppli/cppli.hpp"
 #include "cppli/option.hpp"
+#include "logzy/logzy.hpp"
 
 int main(int argc, const char* const* const argv) {
+  logzy::info("Example one");
+
   cppli::App app("Test App", "v0.1", "Dev app");
 
-  app.AddOption<std::string_view>(
+  app.addOption<std::string_view>(
       // Shortname is an argument used like -n
       // Longname is an arugemnt used like --name
       {.shortName = 'n', .longName = "name"},
@@ -25,15 +28,15 @@ int main(int argc, const char* const* const argv) {
                 std::println("Argument's value is {}", value);
               },
       });
-  app.Run(argc, argv);
+  app.run(argc, argv);
 
   // Or if you do not want to invoke callback immediately you can query for the
   // value later
   std::optional<std::string_view> value1 =
-      app.GetOptionValue<std::string_view>('n');
+      app.getOptionValue<std::string_view>('n');
 
   std::optional<std::string_view> value2 =
-      app.GetOptionValue<std::string_view>("name");
+      app.getOptionValue<std::string_view>("name");
 
   if (value1) {
     std::println("Argument's (-n) later queried value is: {}", *value1);

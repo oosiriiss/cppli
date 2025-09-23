@@ -34,24 +34,24 @@ namespace cppli {
     // Tries to match an option from argv
     // Maps (really just the option) are only altered if an option is matched
     // and it's raw_value is set.
-    std::optional<Option> MatchOptions(OptionStorage& options);
+    std::optional<Option> matchOptions(OptionStorage& options);
 
    private:
     // Parses the option
     // Cannot be const, because it may read next argv if option has argument
-    bool Parse(Option& opt);
+    bool parse(Option& opt);
 
     // Actual parsing is done by ArgvParser::Parse
     // Maps (really just the option) are only altered if an option is matched
     // successfully. Cannot be const, because it may read next argv if option
     // has argument
-    bool ParseShort(const ShortOption& opt, OptionStorage& options);
+    bool parseShort(const ShortOption& opt, OptionStorage& options);
 
     // Actual parsing is done by ArgvParser::Parse
     // Maps (really just the option) are only altered if an option is matched
     // successfully. Cannot be const, because it may read next argv if option
     // has argument
-    bool ParseLong(const LongOption& opt, OptionStorage& options);
+    bool parseLong(const LongOption& opt, OptionStorage& options);
 
     // Chains of short options e.g. -abcdefg
     // If any option expects a value this method immediately returns nullopt as
@@ -60,14 +60,14 @@ namespace cppli {
     // Actual parsing is done by ArgvParser::Parse Maps (really just
     // the option) are only altered if an option is matched successfully. Cannot
     // be const, because it may read next argv if option has argument
-    static std::optional<Option> ParseMultiShort(const MultiShortOption& opts,
+    static std::optional<Option> parseMultiShort(const MultiShortOption& opts,
                                                  OptionStorage& options);
 
     // This reads the next argv and returns it if it is a value
     // TODO :: I mean this looks like a perfect usage for std::expected, but i
     // didn't had any meaningful errors returned as i was writing this.
-    std::optional<Value> ReadExpectValue();
-    std::optional<Argument> ReadArg();
+    std::optional<Value> readExpectValut();
+    std::optional<Argument> readArg();
     std::span<std::string_view> argv_;
     // Index of the currently read argument.
     // Starts from 1 to skip the program name.

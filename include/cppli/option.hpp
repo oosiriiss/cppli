@@ -76,7 +76,7 @@ namespace cppli {
 
     // Gets called after and option is discovered from argv.
     // If rawValue is std::nullopt then the default value will be used.
-    void Matched() const;
+    void matched() const;
 
     // Mostly kept here for printing purposes, but since its relative light it
     // should matter too much
@@ -100,19 +100,19 @@ namespace cppli {
 
   class OptionStorage {
    public:
-    void Add(const Option::Identifier& identifier, Option&& opt);
+    void add(const Option::Identifier& identifier, Option&& opt);
 
-    bool Contains(char shortOption) const;
-    bool Contains(std::string_view longOption) const;
-    bool Contains(const Option::Identifier& identifier) const;
+    [[nodiscard]] bool contains(char shortOption) const;
+    [[nodiscard]] bool contains(std::string_view longOption) const;
+    [[nodiscard]] bool contains(const Option::Identifier& identifier) const;
 
-    Option& Get(char shortOption);
-    Option& Get(std::string_view longOption);
-    const Option& Get(char shortOption) const;
-    const Option& Get(std::string_view longOption) const;
+    [[nodiscard]] Option& get(char shortOption);
+    [[nodiscard]] Option& get(std::string_view longOption);
+    [[nodiscard]] const Option& get(char shortOption) const;
+    [[nodiscard]] const Option& get(std::string_view longOption) const;
 
    private:
-    char ConvertLongToShort(std::string_view longOption) const;
+    [[nodiscard]] char convertLongToShort(std::string_view longOption) const;
 
     std::vector<Option> options_;
     std::unordered_map<char, size_t> shortIndexMap_;

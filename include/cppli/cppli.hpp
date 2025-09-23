@@ -67,7 +67,7 @@ namespace cppli {
     // version -> string version representation
     App(std::string_view title, std::string_view description,
         std::string_view version);
-    void Run(int argc, const char *const *argv);
+    void run(int argc, const char *const *argv);
 
     // Tries to add the specified option to the list of options.
     // Throws std::invalid_argument if it encounters option with the same short
@@ -75,28 +75,29 @@ namespace cppli {
     // beggining from '-' or '--'
     // name.
     template <typename T>
-    void AddOption(Option::Identifier identifier,
+    void addOption(Option::Identifier identifier,
                    const Option::Params<T> &params);
     // Registering custom type convreter from std::string_view
     template <typename T>
-    void RegisterConverter(std::function<T(std::string_view)> &&converter);
+    void registerConverter(std::function<T(std::string_view)> &&converter);
 
     template <typename T>
-    std::optional<T> GetOptionValue(char shortName) const;
+    [[nodiscard]] std::optional<T> getOptionValue(char shortName) const;
 
     template <typename T>
-    std::optional<T> GetOptionValue(std::string_view longName) const;
+    [[nodiscard]] std::optional<T> getOptionValue(
+        std::string_view longName) const;
 
     // Automatically generates the help message from the options
-    void PrintHelp() const;
+    void printHelp() const;
 
     // Automatically generates the option version message from title description
     // and version
-    void PrintVersion() const;
+    void printVersion() const;
 
    private:
     template <typename T>
-    T Convert(std::string_view rawValue) const;
+    [[nodiscard]] T convert(std::string_view rawValue) const;
 
    private:
     // Name of the application
@@ -116,7 +117,7 @@ namespace cppli {
   };
 
   template <typename T>
-  void App::AddOption(Option::Identifier identifier,
+  void App::addOption(Option::Identifier identifier,
                       const Option::Params<T> &params) {
     Option opt{
         .description = params.description.value_or(""),
@@ -134,7 +135,7 @@ namespace cppli {
                                                               rawValue) {
           if (rawValue) {
             logzy::debug("Raw Value: {}", *rawValue);
-            T val = Convert<T>(*rawValue);
+            T val = convert<T>(*rawValue);
             std::invoke(callback, std::move(val));
           } else if (def) {
             logzy::debug("Default opotion invoked");
@@ -147,11 +148,11 @@ namespace cppli {
                                       : std::nullopt,
     };
 
-    options_.Add(identifier, std::move(opt));
+    options_.add(identifier, std::move(opt));
   }
 
   template <typename T>
-  void App::RegisterConverter(std::function<T(std::string_view)> &&converter) {
+  void App::registerConverter(std::function<T(std::string_view)> &&converter) {
     customParsers_[std::type_index(typeid(T))] =
         [convert = std::move(converter)](std::string_view rawValue) {
           return std::any(convert(rawValue));
@@ -159,7 +160,7 @@ namespace cppli {
   }
 
   template <typename T>
-  T App::Convert(std::string_view rawValue) const {
+  T App::convert(std::string_view rawValue) const {
     // TODO :: Default converters for basic types
     if constexpr (std::is_same_v<T, std::string_view>) {
       return rawValue;
@@ -174,15 +175,15 @@ namespace cppli {
   }
 
   template <typename T>
-  std::optional<T> App::GetOptionValue(char shortName) const {
+  std::optional<T> App::getOptionValue(char shortName) const {
     // TODO :: Refactor these duplication
     //  TODO :: Introduce ?variant? class for identifie rpart so i dont have to
     //  duplicat estuff
-    if (!options_.Contains(shortName)) {
+    if (!options_.contains(shortName)) {
       return std::nullopt;
     }
 
-    const Option &option = options_.Get(shortName);
+    const Option &option = options_.get(shortName);
 
     if (!option.rawValue) {
       if (option.defaultValue.has_value()) {
@@ -192,16 +193,16 @@ namespace cppli {
     }
 
     const std::string_view rawValue = *option.rawValue;
-    return std::any_cast<T>(Convert<T>(rawValue));
+    return std::any_cast<T>(convert<T>(rawValue));
   }
 
   template <typename T>
-  std::optional<T> App::GetOptionValue(std::string_view longName) const {
-    if (!options_.Contains(longName)) {
+  std::optional<T> App::getOptionValue(std::string_view longName) const {
+    if (!options_.contains(longName)) {
       return std::nullopt;
     }
 
-    const Option &option = options_.Get(longName);
+    const Option &option = options_.get(longName);
 
     if (!option.rawValue) {
       if (option.defaultValue.has_value()) {
@@ -213,7 +214,7 @@ namespace cppli {
     std::println("ligma");
 
     const std::string_view rawValue = *option.rawValue;
-    return std::any_cast<T>(Convert<T>(rawValue));
+    return std::any_cast<T>(convert<T>(rawValue));
   }
 
 }  // namespace cppli

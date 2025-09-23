@@ -13,7 +13,7 @@ include(FetchContent)
 FetchContent_Declare(
    logzy
    GIT_REPOSITORY https://github.com/oosiriiss/logzy
-   GIT_TAG 0.1
+   GIT_TAG 0.1.1
 )
 FetchContent_MakeAvailable(logzy)
 

@@ -16,17 +16,17 @@ namespace cppli {
         description_(description),
         version_(version) {}
 
-  void App::Run(const int argc, const char* const* const argv) {
+  void App::run(const int argc, const char* const* const argv) {
     std::vector<std::string_view> args(argv, std::next(argv, argc));
 
     ArgvParser parser(std::span{args});
 
-    while (auto optional = parser.MatchOptions(options_)) {
-      (*optional).Matched();
+    while (auto optional = parser.matchOptions(options_)) {
+      (*optional).matched();
     }
   }
 
-  void App::PrintHelp() const {
+  void App::printHelp() const {
     std::print("Usage:\n");
     std::print("{} [options] [arguments]\n", title_);
     std::print("\n\n Options:\n");
@@ -37,7 +37,7 @@ namespace cppli {
     // }
   }
 
-  void App::PrintVersion() const {
+  void App::printVersion() const {
     std::print("{} {}\n{}\n", title_, version_, description_);
   }
 
