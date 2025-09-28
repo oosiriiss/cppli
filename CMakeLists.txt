@@ -13,7 +13,7 @@ include(FetchContent)
 FetchContent_Declare(
    logzy
    GIT_REPOSITORY https://github.com/oosiriiss/logzy
-   GIT_TAG 0.1.1
+   GIT_TAG 0.2
 )
 FetchContent_MakeAvailable(logzy)
 
@@ -22,12 +22,15 @@ include(cmake/variables.cmake)
 
 # ---- Declare library ----
 
+
 add_library(
     cppli_cppli
-    src/argparser.cpp 
-    src/cppli.cpp 
-    src/option.cpp
+   src/argparser.hpp
+   src/argparser.cpp
+   include/cppli/command.hpp
+   include/cppli/option.hpp
 )
+
 add_library(cppli::cppli ALIAS cppli_cppli)
 
 include(GenerateExportHeader)

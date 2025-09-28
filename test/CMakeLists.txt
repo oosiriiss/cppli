@@ -12,13 +12,29 @@ if(PROJECT_IS_TOP_LEVEL)
   enable_testing()
 endif()
 
+include(FetchContent)
+FetchContent_Declare(
+   tasty
+   GIT_REPOSITORY https://github.com/oosiriiss/tasty
+   GIT_TAG 0.2
+)
+FetchContent_MakeAvailable(tasty)
+
+
+add_library(cppliTestCommon INTERFACE)
+target_include_directories(cppliTestCommon INTERFACE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(cppliTestCommon INTERFACE cppli::cppli)
+target_link_libraries(cppliTestCommon INTERFACE tasty::tasty)
+
+function(Register_Test name)
+   add_executable(${name} src/${name}.cpp)
+   target_link_libraries(${name} PRIVATE cppliTestCommon)
+   target_compile_features(${name} PRIVATE cxx_std_23)
+   add_test(NAME ${name} COMMAND ${name})
+endfunction()
 # ---- Tests ----
 
-add_executable(cppli_test source/cppli_test.cpp)
-target_link_libraries(cppli_test PRIVATE cppli::cppli)
-target_compile_features(cppli_test PRIVATE cxx_std_23)
-
-add_test(NAME cppli_test COMMAND cppli_test)
+Register_Test(argparser_test)
 
 # ---- End-of-file commands ----
 

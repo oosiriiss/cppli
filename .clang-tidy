@@ -11,10 +11,12 @@ Checks: "*,\
   -llvm-include-order,\
   -llvmlibc-*,\
   -modernize-use-nodiscard,\
-  -modernize-use-trailing-return-type,\
+  -modernize-return-braced-init-list, \
   -bugprone-easily-swappable-parameters,\
   -readability-redundant-access-specifiers,\
-  -misc-non-private-member-variables-in-classes"
+  -cppcoreguidelines-non-private-member-variables-in-classes, \
+  -misc-non-private-member-variables-in-classes, \
+  -misc-use-anonymous-namespace"
 WarningsAsErrors: ''
 CheckOptions:
   - key: 'bugprone-argument-comment.StrictMode'

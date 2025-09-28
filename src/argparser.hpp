@@ -1,77 +1,96 @@
 #pragma once
+#include <algorithm>
+#include <cstdint>
+#include <logzy/logzy.hpp>
 #include <optional>
 #include <span>
+#include <string_view>
+#include <utility>
 #include <variant>
-
-#include "cppli/option.hpp"
+#include <vector>
 
 namespace cppli {
-  struct Option;
 
-  struct ShortOption {
-    char opt;
-  };
+  // Command determining program behaviour
+  using Command = std::string_view;
 
-  struct MultiShortOption {
-    std::string_view opts;
-  };
+  // An option which expects argument
+  using Option = std::string_view;
 
-  struct LongOption {
-    std::string_view opt;
-  };
+  // An option without an argument that toggles some state. like '--help' or
+  // '-h'
+  using Flag = std::string_view;
 
-  struct Value {
-    std::string_view val;
-  };
+  // Value argument
+  using Value = std::string_view;
 
-  using Argument =
-      std::variant<ShortOption, MultiShortOption, LongOption, Value>;
+  using Argument = std::variant<Command, Option, Flag, Value>;
 
-  class ArgvParser {
+  class ArgParser {
    public:
-    explicit ArgvParser(std::span<std::string_view> argv);
+    ArgParser() = delete;
+    constexpr explicit ArgParser(int argc, char const* const* const argv)
+        : argv_(argvToVector(argc, argv)) {}
 
-    // Tries to match an option from argv
-    // Maps (really just the option) are only altered if an option is matched
-    // and it's raw_value is set.
-    std::optional<Option> matchOptions(OptionStorage& options);
+    // Conestexpr for tests since it cannot wrok with argc and argv
+    [[nodiscard]] constexpr static auto argvToVector(
+        int argc,
+        char const* const* const argv)  // NOLINT C-style array is required
+        -> std::vector<std::string_view> {
+      return std::vector<std::string_view>(
+          argv, std::next(argv, static_cast<std::ptrdiff_t>(argc)));
+    }
+
+    [[nodiscard]] constexpr auto parseProgramArguments(
+        std::span<std::string_view> commands,
+        std::span<std::string_view> options) -> std::vector<Argument> {
+      std::vector<Argument> out;
+      out.reserve(argv_.size() * 2);
+
+      for (const std::string_view argument : argv_) {
+        if (argument.starts_with('-') && argument.size() > 1) {
+          if (std::ranges::find(options, argument) != options.end()) {
+            logzy::debug("'{}' parsed as Option", argument);
+            out.emplace_back(std::in_place_index<1>, argument);  // Option
+          } else {
+            logzy::debug("'{}' parsed as Flag", argument);
+            out.emplace_back(std::in_place_index<2>, argument);  // Flag
+          }
+          continue;
+        }
+
+        if (std::ranges::find(commands, argument) != commands.end()) {
+          logzy::debug("'{}' parsed as Command", argument);
+          out.emplace_back(std::in_place_index<0>, argument);  // Command
+        } else {
+          logzy::debug("'{}' parsed as Value", argument);
+          out.emplace_back(std::in_place_index<3>, argument);  // Value
+        }
+      }
+
+      return out;
+    }
 
    private:
-    // Parses the option
-    // Cannot be const, because it may read next argv if option has argument
-    bool parse(Option& opt);
+    enum class ParseState : std::uint8_t { Value, ShortFlag, LongFlag, End };
 
-    // Actual parsing is done by ArgvParser::Parse
-    // Maps (really just the option) are only altered if an option is matched
-    // successfully. Cannot be const, because it may read next argv if option
-    // has argument
-    bool parseShort(const ShortOption& opt, OptionStorage& options);
+   private:
+    /**
+     * View of the program's argv
+     */
+    std::vector<std::string_view> argv_;
 
-    // Actual parsing is done by ArgvParser::Parse
-    // Maps (really just the option) are only altered if an option is matched
-    // successfully. Cannot be const, because it may read next argv if option
-    // has argument
-    bool parseLong(const LongOption& opt, OptionStorage& options);
+    /**
+     * Index pointing to the currently procesed char of current argument
+     * Used only when parsing Flag argument like '-xvzf' (state is
+     * ParserState::FlagRead)
+     */
+    std::size_t shortFlagIndex_ = 0;
 
-    // Chains of short options e.g. -abcdefg
-    // If any option expects a value this method immediately returns nullopt as
-    // it is not supported (yet? idk how would that even work and it would be
-    // confusing).
-    // Actual parsing is done by ArgvParser::Parse Maps (really just
-    // the option) are only altered if an option is matched successfully. Cannot
-    // be const, because it may read next argv if option has argument
-    static std::optional<Option> parseMultiShort(const MultiShortOption& opts,
-                                                 OptionStorage& options);
-
-    // This reads the next argv and returns it if it is a value
-    // TODO :: I mean this looks like a perfect usage for std::expected, but i
-    // didn't had any meaningful errors returned as i was writing this.
-    std::optional<Value> readExpectValut();
-    std::optional<Argument> readArg();
-    std::span<std::string_view> argv_;
-    // Index of the currently read argument.
-    // Starts from 1 to skip the program name.
-    size_t argIndex_ = 1;
+    /*
+     * Current state of the parser
+     */
+    ParseState state_ = ParserState::NewArgument;
   };
 
 }  // namespace cppli
