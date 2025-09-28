@@ -27,8 +27,6 @@ add_library(
     cppli_cppli
    src/argparser.hpp
    src/argparser.cpp
-   include/cppli/command.hpp
-   include/cppli/option.hpp
 )
 
 add_library(cppli::cppli ALIAS cppli_cppli)
