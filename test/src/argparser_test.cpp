@@ -3,7 +3,7 @@
 #include <print>
 #include <stdexcept>
 #include <string_view>
-#include <typeinfo>
+#include <unordered_set>
 
 #include "tasty/runners.hpp"
 #include "tasty/tasty.hpp"
@@ -41,10 +41,11 @@ constexpr static auto convertingToVectorNoARGV() -> bool {
 
 constexpr static auto parseCommand() {
   std::vector<std::string_view> argv = {"command"sv};
-  std::span commands = argv;
+  std::unordered_set<std::string_view> commands(argv.begin(), argv.end());
 
-  std::vector<cppli::Argument> args =
-      cppli::ArgParser::parseProgramArguments(argv, commands, {});
+  std::vector<cppli::Argument> args = cppli::ArgParser::parseProgramArguments(
+      argv, [&](std::string_view arg) { return false; },  // NOLINT
+      [&](std::string_view arg) { return commands.contains(arg); });
 
   tasty::expectEqual(argv.size(), args.size());
   tasty::expectEqual(0UL, args[0].index());
@@ -52,8 +53,9 @@ constexpr static auto parseCommand() {
 constexpr static auto parseValue() {
   std::vector<std::string_view> argv = {"SomeValue"sv};
 
-  std::vector<cppli::Argument> args =
-      cppli::ArgParser::parseProgramArguments(argv, {}, {});
+  std::vector<cppli::Argument> args = cppli::ArgParser::parseProgramArguments(
+      argv, [&](std::string_view arg) { return false; },  // NOLINT
+      [&](std::string_view arg) { return false; });
 
   tasty::expectEqual(argv.size(), args.size());
   tasty::expectEqual(3UL, args[0].index());
@@ -61,10 +63,12 @@ constexpr static auto parseValue() {
 
 constexpr static auto parseOption() {
   std::vector<std::string_view> argv = {"--Hello"sv};
-  std::span options = argv;
+  std::unordered_set options(argv.begin(), argv.end());
 
-  std::vector<cppli::Argument> args =
-      cppli::ArgParser::parseProgramArguments(argv, {}, options);
+  std::vector<cppli::Argument> args = cppli::ArgParser::parseProgramArguments(
+      argv,
+      [&](std::string_view arg) { return options.contains(arg); },  // NOLINT
+      [](std::string_view arg) { return false; });                  // NOLINT
 
   tasty::expectEqual(argv.size(), args.size());
   tasty::expectEqual(1UL, args[0].index());
@@ -73,8 +77,9 @@ constexpr static auto parseOption() {
 constexpr static auto parseFlag() {
   std::vector<std::string_view> argv = {"--Hello"sv};
 
-  std::vector<cppli::Argument> args =
-      cppli::ArgParser::parseProgramArguments(argv, {}, {});
+  std::vector<cppli::Argument> args = cppli::ArgParser::parseProgramArguments(
+      argv, [](std::string_view arg) { return false; },  // NOLINT
+      [](std::string_view arg) { return false; });       // NOLINT
 
   tasty::expectEqual(argv.size(), args.size());
   tasty::expectEqual(2UL, args[0].index());
@@ -84,11 +89,12 @@ constexpr static auto parseCombinations() {
   std::vector<std::string_view> argv = {"join"sv, "-n", "4",     "--strict",
                                         "Hello",  " ",  "World!"};
 
-  std::vector<std::string_view> commands = {"join"sv};
-  std::vector<std::string_view> options = {"-n"sv};
+  std::unordered_set<std::string_view> commands = {"join"sv};
+  std::unordered_set<std::string_view> options = {"-n"sv};
 
-  std::vector<cppli::Argument> args =
-      cppli::ArgParser::parseProgramArguments(argv, commands, options);
+  std::vector<cppli::Argument> args = cppli::ArgParser::parseProgramArguments(
+      argv, [&](std::string_view arg) { return options.contains(arg); },
+      [&](std::string_view arg) { return commands.contains(arg); });
 
   tasty::expectEqual(argv.size(), args.size());
   std::vector<std::size_t> expectedVariantIndices = {0, 1, 3, 2, 3, 3, 3};

@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <logzy/logzy.hpp>
 #include <optional>
 #include <span>
@@ -39,15 +40,28 @@ namespace cppli {
           argv, std::next(argv, static_cast<std::ptrdiff_t>(argc)));
     }
 
+    /**
+     *
+     * @param argv - program's arguments
+     * @param isOptionFn - function returning true if passed string_view is a
+     * command. Will be invoked for every argument starting with '-' and more
+     * than 1 characater.
+     * @param isCommandFn - function returning true if passed string_view is an
+     * option. Will be invoked for every argument starting that doesnt start
+     * with '-'
+     * @returns a vector of classified arguments
+     */
     [[nodiscard]] static constexpr auto parseProgramArguments(
-        std::span<std::string_view> argv, std::span<std::string_view> commands,
-        std::span<std::string_view> options) -> std::vector<Argument> {
+        std::span<std::string_view> argv,
+        const std::function<bool(std::string_view)>& isOptionFn,
+        const std::function<bool(std::string_view)>& isCommandFn)
+        -> std::vector<Argument> {
       std::vector<Argument> out;
       out.reserve(argv.size() * 2);
 
       for (const std::string_view argument : argv) {
         if (argument.starts_with('-') && argument.size() > 1) {
-          if (std::ranges::find(options, argument) != options.end()) {
+          if (isOptionFn(argument)) {
             logzy::debug("'{}' parsed as Option", argument);
             out.emplace_back(std::in_place_index<1>, argument);  // Option
           } else {
@@ -57,7 +71,7 @@ namespace cppli {
           continue;
         }
 
-        if (std::ranges::find(commands, argument) != commands.end()) {
+        if (isCommandFn(argument)) {
           logzy::debug("'{}' parsed as Command", argument);
           out.emplace_back(std::in_place_index<0>, argument);  // Command
         } else {
