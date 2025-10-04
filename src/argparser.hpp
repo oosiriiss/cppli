@@ -1,3 +1,4 @@
+
 #pragma once
 #include <algorithm>
 #include <cstdint>
@@ -10,22 +11,16 @@
 #include <variant>
 #include <vector>
 
+#include "argument.hpp"
+
 namespace cppli {
 
-  // Command determining program behaviour
-  using Command = std::string_view;
-
-  // An option which expects argument
-  using Option = std::string_view;
-
-  // An option without an argument that toggles some state. like '--help' or
-  // '-h'
-  using Flag = std::string_view;
-
-  // Value argument
-  using Value = std::string_view;
-
-  using Argument = std::variant<Command, Option, Flag, Value>;
+  struct ParseResult {
+    std::vector<std::string_view> commandPath;
+    std::vector<std::string_view> positionalArgs;
+    std::vector<std::pair<std::string_view, std::optional<std::string_view>>>
+        options;
+  };
 
   class ArgParser {
    public:
@@ -40,49 +35,54 @@ namespace cppli {
           argv, std::next(argv, static_cast<std::ptrdiff_t>(argc)));
     }
 
-    /**
-     *
-     * @param argv - program's arguments
-     * @param isOptionFn - function returning true if passed string_view is a
-     * command. Will be invoked for every argument starting with '-' and more
-     * than 1 characater.
-     * @param isCommandFn - function returning true if passed string_view is an
-     * option. Will be invoked for every argument starting that doesnt start
-     * with '-'
-     * @returns a vector of classified arguments
-     */
-    [[nodiscard]] static constexpr auto parseProgramArguments(
-        std::span<std::string_view> argv,
-        const std::function<bool(std::string_view)>& isOptionFn,
-        const std::function<bool(std::string_view)>& isCommandFn)
-        -> std::vector<Argument> {
-      std::vector<Argument> out;
-      out.reserve(argv.size() * 2);
+    [[nodiscard]] constexpr static auto parseProgramArguments(
+        std::span<std::string_view> argv, const Command& rootCommand)
+        -> std::optional<ParseResult> {
+      std::optional<ParseResult> out = ParseResult{};
 
-      for (const std::string_view argument : argv) {
-        if (argument.starts_with('-') && argument.size() > 1) {
-          if (isOptionFn(argument)) {
-            logzy::debug("'{}' parsed as Option", argument);
-            out.emplace_back(std::in_place_index<1>, argument);  // Option
-          } else {
-            logzy::debug("'{}' parsed as Flag", argument);
-            out.emplace_back(std::in_place_index<2>, argument);  // Flag
+      // TODO :: ALlow nestes commands / subcommands
+      const Command* currentCommand = &rootCommand;
+
+      bool parsingCommands = true;
+      bool wasLastOptionWithArg = false;
+
+      // TODO: improve this loop
+      // 	- Double lookup of subcommand
+      //
+      for (const std::string_view arg : argv) {
+        if (parsingCommands && currentCommand->subcommands.contains(arg)) {
+          if (auto optSubcommand = currentCommand->subcommands.get(arg)) {
+            // if an argument exists the pointer is also valid so this could
+            // maybe be inlined
+            if (auto subcommand = optSubcommand->lock()) {
+              currentCommand = subcommand.get();
+              out->commandPath.push_back(arg);
+            }
           }
-          continue;
-        }
-
-        if (isCommandFn(argument)) {
-          logzy::debug("'{}' parsed as Command", argument);
-          out.emplace_back(std::in_place_index<0>, argument);  // Command
         } else {
-          logzy::debug("'{}' parsed as Value", argument);
-          out.emplace_back(std::in_place_index<3>, argument);  // Value
+          parsingCommands = false;
+          if (auto optOption = currentCommand->options.get(arg)) {
+            // if an argument exists the pointer is also valid so this could
+            // maybe be inlined
+            if (auto opt = optOption->lock()) {
+              wasLastOptionWithArg = opt->expectsValue;
+              out->options.emplace_back(arg, std::nullopt);
+            }
+
+          } else {
+            // If argument is not an option it is treated as positional
+            // argument
+            if (wasLastOptionWithArg) {
+              out->options.back().second = arg;
+            } else {
+              out->positionalArgs.push_back(arg);
+            }
+            wasLastOptionWithArg = false;
+          }
         }
       }
 
       return out;
     }
-
-   private:
   };
 }  // namespace cppli

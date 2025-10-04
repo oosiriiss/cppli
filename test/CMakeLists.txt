@@ -16,7 +16,7 @@ include(FetchContent)
 FetchContent_Declare(
    tasty
    GIT_REPOSITORY https://github.com/oosiriiss/tasty
-   GIT_TAG 0.2
+   GIT_TAG 0.2.1
 )
 FetchContent_MakeAvailable(tasty)
 
