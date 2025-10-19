@@ -1,25 +1,26 @@
 
 #pragma once
-#include <algorithm>
-#include <cstdint>
-#include <functional>
 #include <logzy/logzy.hpp>
 #include <optional>
 #include <span>
 #include <string_view>
 #include <utility>
-#include <variant>
 #include <vector>
 
-#include "argument.hpp"
+#include "cppli/command.hpp"
+#include "cppli/option.hpp"
 
 namespace cppli {
+
+  struct RawOption {
+    std::string_view name;
+    std::optional<std::string_view> rawValue;
+  };
 
   struct ParseResult {
     std::vector<std::string_view> commandPath;
     std::vector<std::string_view> positionalArgs;
-    std::vector<std::pair<std::string_view, std::optional<std::string_view>>>
-        options;
+    std::vector<RawOption> options;
   };
 
   class ArgParser {
@@ -37,8 +38,8 @@ namespace cppli {
 
     [[nodiscard]] constexpr static auto parseProgramArguments(
         std::span<std::string_view> argv, const Command& rootCommand)
-        -> std::optional<ParseResult> {
-      std::optional<ParseResult> out = ParseResult{};
+        -> ParseResult {
+      ParseResult out = ParseResult{};
 
       // TODO :: ALlow nestes commands / subcommands
       const Command* currentCommand = &rootCommand;
@@ -56,7 +57,7 @@ namespace cppli {
             // maybe be inlined
             if (auto subcommand = optSubcommand->lock()) {
               currentCommand = subcommand.get();
-              out->commandPath.push_back(arg);
+              out.commandPath.push_back(arg);
             }
           }
         } else {
@@ -66,16 +67,16 @@ namespace cppli {
             // maybe be inlined
             if (auto opt = optOption->lock()) {
               wasLastOptionWithArg = opt->expectsValue;
-              out->options.emplace_back(arg, std::nullopt);
+              out.options.emplace_back(arg, std::nullopt);
             }
 
           } else {
             // If argument is not an option it is treated as positional
             // argument
             if (wasLastOptionWithArg) {
-              out->options.back().second = arg;
+              out.options.back().rawValue = arg;
             } else {
-              out->positionalArgs.push_back(arg);
+              out.positionalArgs.push_back(arg);
             }
             wasLastOptionWithArg = false;
           }
