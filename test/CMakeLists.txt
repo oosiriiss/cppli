@@ -35,6 +35,7 @@ endfunction()
 # ---- Tests ----
 
 Register_Test(argparser_test)
+Register_Test(conversion_test)
 
 # ---- End-of-file commands ----
 

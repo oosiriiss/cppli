@@ -1,5 +1,7 @@
 #include "cppli/cppli.hpp"
 
+#include <logzy/logzy.hpp>
+
 #include "argparser.hpp"
 
 namespace cppli {
@@ -17,6 +19,7 @@ namespace cppli {
         ArgParser::parseProgramArguments(argvVector, this->rootCommand_);
 
     positionalArgs_.append_range(result.positionalArgs);
+    logzy::debug("positional args: {}", positionalArgs_);
   }
 
 }  // namespace cppli
