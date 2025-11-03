@@ -1,7 +1,10 @@
 #pragma once
 
+#include <any>
 #include <expected>
+#include <functional>
 #include <string_view>
+#include <typeindex>
 #include <vector>
 
 #include "cppli/command.hpp"
@@ -15,10 +18,18 @@ namespace cppli {
     void registerOption(const std::vector<std::string>& aliases, Option option);
 
     template <typename T>
+    constexpr void registerConverter(
+        std::function<T(std::string_view)> converterFn);
+
+    template <typename T>
     [[nodiscard]] constexpr auto getPositionalArgument(
         std::size_t argumentIndex) const -> std::expected<T, std::string>;
 
    private:
+    std::unordered_map<std::type_index,
+                       std::function<std::any(std::string_view)>>
+        converters_;
+
     std::vector<Option> matchedOptions_;
     std::vector<std::string_view> positionalArgs_;
 
@@ -28,6 +39,15 @@ namespace cppli {
   //////////////////////////////////////////
   ////////// Template definitions /////////
   //////////////////////////////////////////
+
+  template <typename T>
+  constexpr void App::registerConverter(
+      std::function<T(std::string_view)> converterFn) {
+    converters_[std::type_index(typeid(T))] =
+        [converterFn](std::string_view raw) {
+          return std::make_any<T>(converterFn(raw));
+        };
+  }
 
   template <typename T>
   [[nodiscard]] constexpr auto App::getPositionalArgument(
@@ -56,6 +76,9 @@ namespace cppli {
         return std::unexpected(std::string("Couldn't convert integral value"));
       }
       return Exp(integerValue);
+    } else if (converters_.contains(std::type_index(typeid(T)))) {
+      return std::any_cast<T>(
+          converters_.at(std::type_index(typeid(T)))(rawArgument));
     } else {
       return std::unexpected(std::string(
           "Cannot convert positional type. Unsupported type. Cannot convert"));
