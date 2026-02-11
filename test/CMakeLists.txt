@@ -1,16 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(cppliTests LANGUAGES CXX)
-
-include(../cmake/project-is-top-level.cmake)
-include(../cmake/folders.cmake)
-
-# ---- Dependencies ----
-
-if(PROJECT_IS_TOP_LEVEL)
-  find_package(cppli REQUIRED)
-  enable_testing()
-endif()
+project(cppli_tests LANGUAGES CXX)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -20,23 +10,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tasty)
 
-
-add_library(cppliTestCommon INTERFACE)
-target_include_directories(cppliTestCommon INTERFACE ${CMAKE_SOURCE_DIR}/src)
-target_link_libraries(cppliTestCommon INTERFACE cppli::cppli)
-target_link_libraries(cppliTestCommon INTERFACE tasty::tasty)
-
 function(Register_Test name)
-   add_executable(${name} src/${name}.cpp)
-   target_link_libraries(${name} PRIVATE cppliTestCommon)
+   add_executable(${name} ${name}.cpp)
+   target_link_libraries(${name} PRIVATE cppli-lib tasty::tasty)
    target_compile_features(${name} PRIVATE cxx_std_23)
    add_test(NAME ${name} COMMAND ${name})
+   message("Test ${name} registered")
 endfunction()
-# ---- Tests ----
 
-Register_Test(argparser_test)
-Register_Test(conversion_test)
 
-# ---- End-of-file commands ----
-
-add_folders(Test)
+Register_Test(test1)
