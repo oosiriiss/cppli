@@ -10,8 +10,8 @@ endif()
 add_library(
      cppli-lib STATIC
 
-     ./src/lib1.cpp
-     ./src/lib1.hpp
+     ./src/argument_container.hpp
+     ./src/argument.hpp
 )
 
 target_include_directories(
@@ -20,7 +20,7 @@ target_include_directories(
    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
 )
 target_compile_features(cppli-lib PRIVATE cxx_std_23)
-
+set_target_properties(cppli-lib PROPERTIES LINKER_LANGUAGE CXX)
 
 add_subdirectory(test)
 add_subdirectory(example)

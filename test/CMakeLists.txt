@@ -19,4 +19,4 @@ function(Register_Test name)
 endfunction()
 
 
-Register_Test(test1)
+Register_Test(arg_container_test)
