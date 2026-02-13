@@ -23,6 +23,7 @@ auto main() -> int {
     tasty::expectEqual(args1[1], argv1[1]);
     tasty::expectEqual(args1[2], argv1[2]);
     tasty::expectEqual(args1[3], argv1[3]);
+    tasty::expectEqual(args1[4], argv1[3]);
   } catch (const tasty::errors::ExpectFailed& err) {
     return -1;
   }

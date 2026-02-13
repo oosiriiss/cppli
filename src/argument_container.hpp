@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string_view>
 
+#include "debug_utils.hpp"
+
 struct ArgumentContainer {
  public:
   constexpr ArgumentContainer(int argc, char const* const* const argv)
@@ -12,10 +14,9 @@ struct ArgumentContainer {
   [[nodiscard]] constexpr auto operator[](size_t index) const
       -> std::string_view {
     // TODO :: debug only exception?
-    if (index >= argc_ || index < 0) {
+    DEBUG_ONLY(if (index >= argc_ || index < 0) {
       throw std::invalid_argument("Argument index outside of bounds");
-    }
-    assert(index >= 0 && index < argc_);
+    });
     return argv_[index];
   }
 
