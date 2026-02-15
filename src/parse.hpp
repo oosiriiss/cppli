@@ -52,6 +52,7 @@ namespace internal {
     // Temporary storage in lastPositional
     lastPositional.emplace(positional);
   }
+
   // TODO :: Error handling, For now this just throws std::runtime_error and
   // preferrably I would like to make it Error as Value with std::expected
   template <class OptionKey>
@@ -62,13 +63,24 @@ namespace internal {
       const OptionContainer<OptionKey>& definedOptions,
       ParseResult<OptionKey>& result) {
     DEBUG_ASSERT(classifyArgument(argument) == internal::ArgType::Option);
-    std::optional optionDataOpt = definedOptions.matchOptionByName(argument);
+    auto optionDataOpt = definedOptions.matchOptionByName(argument);
     if (!optionDataOpt) {
       throw std::runtime_error(std::format("Unknown option: '{}'", argument));
     }
+
+    std::optional<std::string_view> optionValue;
     auto& [optionKey, option] = *optionDataOpt;
+
+    if (option.needsValue) {
+      if (!value) {
+        throw std::runtime_error(
+            std::format("Option '{}' requires a value.", argument));
+      }
+      optionValue.emplace(*value);
+    }
+
     // TODO :: Handle Option values
-    result.options.emplace(optionKey, std::nullopt);
+    result.options.emplace(optionKey, optionValue);
   }
 };  // namespace internal
 
@@ -93,12 +105,11 @@ template <class OptionKey>
     ArgType type = classifyArgument(argument);
 
     switch (type) {
-      case internal::ArgType::Positional:
-        internal::handlePositional(argument, result, lastPositional);
+      case ArgType::Positional:
+        handlePositional(argument, result, lastPositional);
         break;
-      case internal::ArgType::Option:
-        internal::handleOption(argument, lastPositional, definedOptions,
-                               result);
+      case ArgType::Option:
+        handleOption(argument, lastPositional, definedOptions, result);
         break;
     }
   }
