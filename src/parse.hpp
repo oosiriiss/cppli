@@ -94,22 +94,28 @@ template <class OptionKey>
 
   using internal::ArgType;
   using internal::classifyArgument;
+  using internal::getRelevantValue;
   using internal::handleOption;
   using internal::handlePositional;
+  using internal::splitNameValue;
 
   // Positionals are first inserted here, as they might be a value for option.
   std::optional<std::string_view> lastPositional;
 
   for (std::string_view argument : args | std::views::reverse) {
+    auto [name, valueOpt] = splitNameValue(argument);
+
+    auto& valueRef = getRelevantValue(valueOpt, lastPositional);
+
     // TODO :: Split name and value to support '--name=value'
-    ArgType type = classifyArgument(argument);
+    ArgType type = classifyArgument(name);
 
     switch (type) {
       case ArgType::Positional:
         handlePositional(argument, result, lastPositional);
         break;
       case ArgType::Option:
-        handleOption(argument, lastPositional, definedOptions, result);
+        handleOption(name, valueRef, definedOptions, result);
         break;
     }
   }

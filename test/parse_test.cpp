@@ -69,6 +69,33 @@ static constexpr void properParsingOptionsWithValuesAsSeparateArguments() {
   tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
 }
 
+static constexpr void properParsingOptionsWithValuesWithEqualSigns() {
+  std::array argv{"./program",
+                  "positional",
+                  "--option",
+                  "positional2",
+                  "--option3=value",
+                  "--option2=option2value",
+                  "option2valueWithLowerPriority"};
+  ArgumentContainer args(argv.size(), argv.data());
+  OptionContainer<OptionKey> container;
+
+  container.addOption(
+      OptionKey::First,
+      Option{.firstName = "-o", .secondName = "--option", .needsValue = false});
+  container.addOption(
+      OptionKey::Second,
+      Option{.firstName = "-s", .secondName = "--option2", .needsValue = true});
+  container.addOption(
+      OptionKey::Third,
+      Option{.firstName = "-g", .secondName = "--option3", .needsValue = true});
+
+  auto result = parseArguments(args, container);
+  tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
+  tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
+  tasty::expectEqual("value", *result.options[OptionKey::Third].value);
+}
+
 static constexpr void parsingOptionWithValueButNoValueWasGivenShouldError() {
   std::array argv{"./program", "--option"};
   ArgumentContainer args(argv.size(), argv.data());
@@ -89,6 +116,8 @@ auto main() -> int {
                       "properParsingOfOptionsWithoutValues");
   runner.registerTest(properParsingOptionsWithValuesAsSeparateArguments,
                       "properParsingOptionsWithValuesAsSeparateArguments");
+  runner.registerTest(properParsingOptionsWithValuesWithEqualSigns,
+                      "properParsingOptionsWithValuesWithEqualSigns");
   runner.registerTest(parsingOptionWithValueButNoValueWasGivenShouldError,
                       "parsingOptionWithValueButNoValueWasGivenShouldError");
 
