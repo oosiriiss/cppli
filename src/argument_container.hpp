@@ -71,7 +71,7 @@ struct ArgumentContainer {
 
   using iterator = ArgIterator;  // NOLINT
 
-  constexpr auto begin() -> iterator { return iterator(argv_); }
-  constexpr auto end() -> iterator { return iterator(argv_ + argc_); }
+  constexpr auto begin() const -> iterator { return iterator(argv_); }
+  constexpr auto end() const -> iterator { return iterator(argv_ + argc_); }
 
 };  // NOLINT
