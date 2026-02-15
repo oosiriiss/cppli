@@ -1,6 +1,5 @@
 
 #include <array>
-#include <cmath>
 #include <cstdlib>
 #include <print>
 #include <queue>
@@ -11,7 +10,6 @@
 #include <tasty/tasty.hpp>
 
 #include "argument_container.hpp"
-#include "debug_utils.hpp"
 
 static constexpr void properAccesToArguments() {
   std::array argv1 = {

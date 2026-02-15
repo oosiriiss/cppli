@@ -21,3 +21,5 @@ endfunction()
 
 Register_Test(arg_container_test)
 Register_Test(define_arguments_test)
+Register_Test(parse_test)
+Register_Test(general_api_test)

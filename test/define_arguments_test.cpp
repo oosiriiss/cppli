@@ -3,8 +3,8 @@
 #include <tasty/runners.hpp>
 #include <tasty/tasty.hpp>
 
-#include "argument.hpp"
 #include "debug_utils.hpp"
+#include "option.hpp"
 
 enum class MyKey : std::uint8_t {
   FirstArg,
@@ -15,7 +15,7 @@ static constexpr void duplicateNamesShouldThrowInDebug() {
   if constexpr (debugutils::DEBUG) {
     // Short name duplicated
     tasty::expectException<std::invalid_argument>([]() -> void {
-      ArgumentContainer<MyKey> cont;
+      OptionContainer<MyKey> cont;
 
       cont.addOption(MyKey::FirstArg,
                      Option{.firstName = "-h", .secondName = "--help"});
@@ -24,7 +24,7 @@ static constexpr void duplicateNamesShouldThrowInDebug() {
     });
     // Long name duplicated
     tasty::expectException<std::invalid_argument>([]() -> void {
-      ArgumentContainer<MyKey> cont;
+      OptionContainer<MyKey> cont;
 
       cont.addOption(MyKey::FirstArg,
                      Option{.firstName = "-o", .secondName = "--help"});
@@ -35,18 +35,18 @@ static constexpr void duplicateNamesShouldThrowInDebug() {
 }
 
 static constexpr void matchRegisteredOptionsReturnsProperOne() {
-  ArgumentContainer<MyKey> cont;
+  OptionContainer<MyKey> cont;
   cont.addOption(MyKey::FirstArg,
                  Option{.firstName = "-h", .secondName = "--helo"});
 
-  std::optional<Option> byFirst = cont.matchOptionByName("-h");
-  std::optional<Option> bySecond = cont.matchOptionByName("--helo");
+  std::optional byFirst = cont.matchOptionByName("-h");
+  std::optional bySecond = cont.matchOptionByName("--helo");
 
   tasty::expectEqual(byFirst.has_value(), true);
   tasty::expectEqual(bySecond.has_value(), true);
 
   // Matching non-registered
-  std::optional<Option> byUnknown = cont.matchOptionByName("-x");
+  std::optional byUnknown = cont.matchOptionByName("-x");
   tasty::expectEqual(byUnknown.has_value(), false);
 }
 

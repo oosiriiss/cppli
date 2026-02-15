@@ -10,7 +10,9 @@ add_library(
      cppli-lib STATIC
 
      ./src/argument_container.hpp
-     ./src/argument.hpp
+     ./src/option.hpp
+     ./src/parse.hpp
+     ./src/parse_internal.hpp
 )
 
 

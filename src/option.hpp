@@ -1,42 +1,30 @@
 #pragma once
-#include <cstdint>
-#include <format>
 #include <optional>
-#include <stdexcept>
+#include <string_view>
 #include <unordered_map>
 
 #include "debug_utils.hpp"
-
-// Parsed type of argument from i.e. argv
-enum class ArgType : std::uint8_t {
-  //
-  Positional,
-  // TODO :: Add support for commands
-  Command,
-  //
-  Flag,
-  //
-  Option
-};
 
 // Option defined by user
 struct Option {
   std::string_view firstName;
   std::string_view secondName;
+  bool needsValue = false;
 };
 
 // Container for options defined by user
 template <class OptionKey>
-struct ArgumentContainer {
+struct OptionContainer {
   // TODO :: ?Constexpr? Fixed size map for arguments, as they all should be
+  // TODO :: Validate the defined options, check if they make sense.
   // known at compile time
 
   using Container = std::unordered_map<OptionKey, Option>;
 
   constexpr void addOption(OptionKey key, Option option);
 
-  [[nodiscard]] constexpr auto matchOptionByName(
-      std::string_view name) const noexcept -> std::optional<Option>;
+  [[nodiscard]] constexpr auto matchOptionByName(std::string_view name)
+      const noexcept -> std::optional<std::pair<OptionKey, Option>>;
 
  private:
   Container options_;
@@ -45,8 +33,8 @@ struct ArgumentContainer {
 };
 
 template <class OptionKey>
-constexpr void ArgumentContainer<OptionKey>::addOption(OptionKey key,
-                                                       Option option) {
+constexpr void OptionContainer<OptionKey>::addOption(OptionKey key,
+                                                     Option option) {
   // TODO :: Make sure users can switch debug/non-debug version of this
   // library.
 
@@ -84,13 +72,12 @@ constexpr void ArgumentContainer<OptionKey>::addOption(OptionKey key,
   options_.emplace(key, option);
   nameKeyTranslations_.emplace(option.firstName, key);
   nameKeyTranslations_.emplace(option.secondName, key);
-
-  // TODO :: Insert translations
 }
 
 template <class OptionKey>
-[[nodiscard]] constexpr auto ArgumentContainer<OptionKey>::matchOptionByName(
-    std::string_view name) const noexcept -> std::optional<Option> {
+[[nodiscard]] constexpr auto OptionContainer<OptionKey>::matchOptionByName(
+    std::string_view name) const noexcept
+    -> std::optional<std::pair<OptionKey, Option>> {
   // TODO :: return Option& if they become relatively rage
   auto translationIterator = nameKeyTranslations_.find(name);
 
@@ -100,5 +87,6 @@ template <class OptionKey>
   }
   DEBUG_ASSERT(options_.contains(translationIterator->second),
                "Option must exist if translation was found");
-  return options_.at(translationIterator->second);
+  return std::pair{translationIterator->second,
+                   options_.at(translationIterator->second)};
 }
