@@ -6,6 +6,9 @@
 
 #include "option.hpp"
 
+using namespace cppli;            // NOLINT
+using namespace cppli::internal;  // NOLINT
+
 enum class OptionKey : std::uint8_t {
   First,
   Second,
@@ -15,16 +18,15 @@ enum class OptionKey : std::uint8_t {
 static constexpr void properParsingOfPositionals() {
   std::array argv{"./program", "positional", "positional2", "--option",
                   "value",     "--option2",  "positional3"};
-  ArgumentContainer args(argv.size(), argv.data());
-  OptionContainer<OptionKey> container;
 
+  OptionContainer<OptionKey> container;
   container.addOption(
       OptionKey::First,
       Option{.firstName = "-o", .secondName = "--option", .needsValue = false});
   container.addOption(OptionKey::Second, Option{.firstName = "-s",
                                                 .secondName = "--option2",
                                                 .needsValue = false});
-  auto result = parseArguments(args, container);
+  auto result = parseArguments(argv.size(), argv.data(), container);
   tasty::expectEqual(
       "./program", result.positionals[0]);  // TODO :: What about program name?
   tasty::expectEqual("positional", result.positionals[1]);
@@ -35,7 +37,6 @@ static constexpr void properParsingOfPositionals() {
 static constexpr void properParsingOfOptionsWithoutValues() {
   std::array argv{"./program", "positional", "positional2", "--option",
                   "value",     "--option2",  "positional3"};
-  ArgumentContainer args(argv.size(), argv.data());
   OptionContainer<OptionKey> container;
 
   container.addOption(
@@ -44,7 +45,7 @@ static constexpr void properParsingOfOptionsWithoutValues() {
   container.addOption(OptionKey::Second, Option{.firstName = "-s",
                                                 .secondName = "--option2",
                                                 .needsValue = false});
-  auto result = parseArguments(args, container);
+  auto result = parseArguments(argv.size(), argv.data(), container);
   tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
   tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::Second]);
 }
@@ -64,7 +65,7 @@ static constexpr void properParsingOptionsWithValuesAsSeparateArguments() {
   container.addOption(
       OptionKey::Third,
       Option{.firstName = "-g", .secondName = "--option3", .needsValue = true});
-  auto result = parseArguments(args, container);
+  auto result = parseArguments(argv.size(), argv.data(), container);
   tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
   tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
 }
@@ -77,7 +78,6 @@ static constexpr void properParsingOptionsWithValuesWithEqualSigns() {
                   "--option3=value",
                   "--option2=option2value",
                   "option2valueWithLowerPriority"};
-  ArgumentContainer args(argv.size(), argv.data());
   OptionContainer<OptionKey> container;
 
   container.addOption(
@@ -90,7 +90,7 @@ static constexpr void properParsingOptionsWithValuesWithEqualSigns() {
       OptionKey::Third,
       Option{.firstName = "-g", .secondName = "--option3", .needsValue = true});
 
-  auto result = parseArguments(args, container);
+  auto result = parseArguments(argv.size(), argv.data(), container);
   tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
   tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
   tasty::expectEqual("value", *result.options[OptionKey::Third].value);
@@ -98,15 +98,15 @@ static constexpr void properParsingOptionsWithValuesWithEqualSigns() {
 
 static constexpr void parsingOptionWithValueButNoValueWasGivenShouldError() {
   std::array argv{"./program", "--option"};
-  ArgumentContainer args(argv.size(), argv.data());
-  OptionContainer<OptionKey> container;
 
+  OptionContainer<OptionKey> container;
   container.addOption(
       OptionKey::First,
       Option{.firstName = "-o", .secondName = "--option", .needsValue = true});
 
-  tasty::expectException<std::runtime_error>(
-      [&]() -> void { auto result = parseArguments(args, container); });
+  tasty::expectException<std::runtime_error>([&]() -> void {
+    auto result = parseArguments(argv.size(), argv.data(), container);
+  });
 }
 
 auto main() -> int {

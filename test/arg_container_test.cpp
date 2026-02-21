@@ -11,6 +11,9 @@
 
 #include "argument_container.hpp"
 
+using namespace cppli;            // NOLINT
+using namespace cppli::internal;  // NOLINT
+
 static constexpr void properAccesToArguments() {
   std::array argv1 = {
       "./program",

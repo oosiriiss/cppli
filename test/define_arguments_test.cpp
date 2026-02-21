@@ -6,6 +6,8 @@
 #include "debug_utils.hpp"
 #include "option.hpp"
 
+using namespace cppli;  // NOLINT
+
 enum class MyKey : std::uint8_t {
   FirstArg,
   SecondArg,
