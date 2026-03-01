@@ -46,8 +46,10 @@ static constexpr void properParsingOfOptionsWithoutValues() {
                                                 .secondName = "--option2",
                                                 .needsValue = false});
   auto result = parseArguments(argv.size(), argv.data(), container);
-  tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
-  tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::Second]);
+  tasty::expectEqual(OptionValue{std::nullopt},
+                     result.options[OptionKey::First]);
+  tasty::expectEqual(OptionValue{std::nullopt},
+                     result.options[OptionKey::Second]);
 }
 
 static constexpr void properParsingOptionsWithValuesAsSeparateArguments() {
@@ -66,7 +68,8 @@ static constexpr void properParsingOptionsWithValuesAsSeparateArguments() {
       OptionKey::Third,
       Option{.firstName = "-g", .secondName = "--option3", .needsValue = true});
   auto result = parseArguments(argv.size(), argv.data(), container);
-  tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
+  tasty::expectEqual(OptionValue{std::nullopt},
+                     result.options[OptionKey::First]);
   tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
 }
 
@@ -91,7 +94,8 @@ static constexpr void properParsingOptionsWithValuesWithEqualSigns() {
       Option{.firstName = "-g", .secondName = "--option3", .needsValue = true});
 
   auto result = parseArguments(argv.size(), argv.data(), container);
-  tasty::expectEqual(OptionValue::empty(), result.options[OptionKey::First]);
+  tasty::expectEqual(OptionValue{std::nullopt},
+                     result.options[OptionKey::First]);
   tasty::expectEqual("option2value", *result.options[OptionKey::Second].value);
   tasty::expectEqual("value", *result.options[OptionKey::Third].value);
 }

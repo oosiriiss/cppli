@@ -9,25 +9,16 @@
 #include <vector>
 
 #include "argument_container.hpp"
+#include "debug_utils.hpp"
 #include "option.hpp"
 #include "parse_internal.hpp"
-
-#if defined(ENABLE_DEBUG_UTILS)
-#include "debug_utils.hpp"
-#endif
 
 namespace cppli {
   struct OptionValue;
 
   // TODO :: Thinks of a better name
   struct OptionValue {
-    // Keeping just the value since name is redundant when access is based on
-    // optionkey.
     std::optional<std::string_view> value;
-
-    [[nodiscard]] constexpr static auto empty() -> OptionValue {
-      return OptionValue{std::nullopt};
-    }
 
     [[nodiscard]] constexpr auto operator==(const OptionValue& other) const
         -> bool {

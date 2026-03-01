@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.21)
 
 project(cppli_tests LANGUAGES CXX)
 
@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
    tasty
    GIT_REPOSITORY https://github.com/oosiriiss/tasty
-   GIT_TAG 0.2.9.2
+   GIT_TAG 0.2.9.1
 )
 FetchContent_MakeAvailable(tasty)
 

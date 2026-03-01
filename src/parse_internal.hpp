@@ -3,10 +3,6 @@
 #include <optional>
 #include <string_view>
 
-#if defined(ENABLE_DEBUG_UTILS)
-#include "debug_utils.hpp"
-#endif
-
 namespace cppli {
   namespace internal {
     // Parsed type of argument from i.e. argv

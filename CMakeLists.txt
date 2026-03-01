@@ -1,9 +1,17 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.14)
 
-option(ENABLE_DEBUG_UTILS "Enable debug header ./vendor/debug_utils/debug_utils.hpp" OFF)
-option(CMAKE_EXPORT_COMPILE_COMMANDS "output compile_commands.json" ON)
+# What about this option when library is public?
+
 
 project(cppli LANGUAGES CXX)
+include(./cmake/project_is_top_level.cmake)
+
+option(ENABLE_DEBUG_UTILS "Enable debug header ./vendor/debug_utils/debug_utils.hpp" ${PROJECT_IS_TOP_LEVEL})
+option(CPPLI_BUILD_TESTS "Whether tests should be compiled" ${PROJECT_IS_TOP_LEVEL})
+option(CPPLI_BUILD_EXAMPLES "Whether examples should be compiled" ${PROJECT_IS_TOP_LEVEL})
+if(PROJECT_IS_TOP_LEVEL)
+   option(CMAKE_EXPORT_COMPILE_COMMANDS "output compile_commands.json" ON)
+endif()
 
 
 add_library(
@@ -31,5 +39,11 @@ target_include_directories(
 target_compile_features(cppli-lib PRIVATE cxx_std_23)
 set_target_properties(cppli-lib PROPERTIES LINKER_LANGUAGE CXX)
 
-add_subdirectory(test)
-add_subdirectory(example)
+
+if(CPPLI_BUILD_TESTS)
+   add_subdirectory(test)
+endif()
+
+if(CPPLI_BUILD_EXAMPLES)
+   add_subdirectory(example)
+endif()

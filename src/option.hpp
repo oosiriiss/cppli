@@ -4,9 +4,7 @@
 #include <unordered_map>
 #include <utility>
 
-#if defined(ENABLE_DEBUG_UTILS)
 #include "debug_utils.hpp"
-#endif
 
 namespace cppli {
 
