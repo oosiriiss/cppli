@@ -23,6 +23,7 @@ add_library(
      ./src/parse_internal.hpp
 )
 
+add_library(cppli::cppli ALIAS cppli-lib)
 
 include_directories(./vendor/debug_utils)
 if(ENABLE_DEBUG_UTILS)
