@@ -15,7 +15,7 @@ endif()
 
 
 add_library(
-     cppli-lib STATIC
+     cppli-lib INTERFACE
 
      ./src/argument_container.hpp
      ./src/option.hpp
@@ -27,17 +27,17 @@ add_library(cppli::cppli ALIAS cppli-lib)
 
 include_directories(./vendor/debug_utils)
 if(ENABLE_DEBUG_UTILS)
-   target_compile_definitions(cppli-lib PUBLIC ENABLE_DEBUG_UTILS)
+   target_compile_definitions(cppli-lib INTERFACE ENABLE_DEBUG_UTILS)
 endif()
 
 
 target_include_directories(
    cppli-lib
-   PUBLIC
+   INTERFACE
    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
 )
 
-target_compile_features(cppli-lib PRIVATE cxx_std_23)
+target_compile_features(cppli-lib INTERFACE cxx_std_23)
 set_target_properties(cppli-lib PROPERTIES LINKER_LANGUAGE CXX)
 
 
