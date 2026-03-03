@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(ENABLE_DEBUG_UTILS)
+#if defined(CPPLI_ENABLE_DEBUG_UTILS)
 
 #include <cstdlib>
 #include <iostream>

@@ -6,9 +6,9 @@ cmake_minimum_required(VERSION 3.14)
 project(cppli LANGUAGES CXX)
 include(./cmake/project_is_top_level.cmake)
 
-option(ENABLE_DEBUG_UTILS "Enable debug header ./vendor/debug_utils/debug_utils.hpp" ${PROJECT_IS_TOP_LEVEL})
-option(CPPLI_BUILD_TESTS "Whether tests should be compiled" ${PROJECT_IS_TOP_LEVEL})
-option(CPPLI_BUILD_EXAMPLES "Whether examples should be compiled" ${PROJECT_IS_TOP_LEVEL})
+option(CPPLI_ENABLE_DEBUG_UTILS "Enable debug utilities for cppli" ${PROJECT_IS_TOP_LEVEL})
+option(CPPLI_BUILD_TESTS "Whether tests should be compiled for cppli" ${PROJECT_IS_TOP_LEVEL})
+option(CPPLI_BUILD_EXAMPLES "Whether examples should be compiled for cppli" ${PROJECT_IS_TOP_LEVEL})
 if(PROJECT_IS_TOP_LEVEL)
    option(CMAKE_EXPORT_COMPILE_COMMANDS "output compile_commands.json" ON)
 endif()
@@ -26,8 +26,8 @@ add_library(
 add_library(cppli::cppli ALIAS cppli-lib)
 
 include_directories(./vendor/debug_utils)
-if(ENABLE_DEBUG_UTILS)
-   target_compile_definitions(cppli-lib INTERFACE ENABLE_DEBUG_UTILS)
+if(CPPLI_ENABLE_DEBUG_UTILS)
+   target_compile_definitions(cppli-lib INTERFACE CPPLI_ENABLE_DEBUG_UTILS)
 endif()
 
 
