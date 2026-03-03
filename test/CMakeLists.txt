@@ -12,7 +12,7 @@ FetchContent_MakeAvailable(tasty)
 
 function(Register_Test name)
    add_executable(${name} ${name}.cpp)
-   target_link_libraries(${name} PRIVATE cppli-lib tasty::tasty)
+   target_link_libraries(${name} PRIVATE cppli-lib PRIVATE tasty::tasty)
    target_compile_features(${name} PRIVATE cxx_std_23)
    add_test(NAME ${name} COMMAND ${name})
    message("Test ${name} registered")

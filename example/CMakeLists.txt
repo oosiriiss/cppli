@@ -6,6 +6,7 @@ function(Add_example name)
    add_executable(${name} ${name}.cpp)
    target_link_libraries(${name} PRIVATE cppli-lib)
    target_compile_features(${name} PRIVATE cxx_std_23)
+   add_test(NAME ${name} COMMAND ${name})
    message("Registered ${name}")
 endfunction()
 

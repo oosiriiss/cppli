@@ -25,9 +25,14 @@ add_library(
 
 add_library(cppli::cppli ALIAS cppli-lib)
 
-include_directories(./vendor/debug_utils)
 if(CPPLI_ENABLE_DEBUG_UTILS)
    target_compile_definitions(cppli-lib INTERFACE CPPLI_ENABLE_DEBUG_UTILS)
+endif()
+
+
+# g++ requires this library for std::stacktrace
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU") 
+   target_link_libraries(cppli-lib INTERFACE stdc++exp)
 endif()
 
 
@@ -35,6 +40,7 @@ target_include_directories(
    cppli-lib
    INTERFACE
    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
+   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/vendor/debug_utils>"
 )
 
 target_compile_features(cppli-lib INTERFACE cxx_std_23)
