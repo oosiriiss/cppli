@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.21)
 
+
 project(cppli_tests LANGUAGES CXX)
+
+include(../cmake/log.cmake)
+include(CTest)
+enable_testing()
+
+# Building just tests
+if(PROJECT_IS_TOP_LEVEL)
+   find_package(cppli REQUIRED)
+endif()
 
 include(FetchContent)
 FetchContent_Declare(
@@ -8,14 +18,17 @@ FetchContent_Declare(
    GIT_REPOSITORY https://github.com/oosiriiss/tasty
    GIT_TAG 0.2.9.1
 )
+
+
+
 FetchContent_MakeAvailable(tasty)
 
 function(Register_Test name)
    add_executable(${name} ${name}.cpp)
-   target_link_libraries(${name} PRIVATE cppli-lib PRIVATE tasty::tasty)
+   target_link_libraries(${name} PRIVATE cppli::cppli PRIVATE tasty::tasty)
    target_compile_features(${name} PRIVATE cxx_std_23)
    add_test(NAME ${name} COMMAND ${name})
-   message("Test ${name} registered")
+   log("Test ${name} registered")
 endfunction()
 
 

@@ -2,9 +2,7 @@
 #include <iostream>
 #include <print>
 
-#include "argument_container.hpp"
-#include "option.hpp"
-#include "parse.hpp"
+#include "cppli/cppli.hpp"
 
 enum class ArgumentType : std::uint8_t { Help, Output };
 

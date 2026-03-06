@@ -3,8 +3,7 @@
 #include <tasty/runners.hpp>
 #include <tasty/tasty.hpp>
 
-#include "debug_utils.hpp"
-#include "option.hpp"
+#include "cppli/option.hpp"
 
 using namespace cppli;  // NOLINT
 
