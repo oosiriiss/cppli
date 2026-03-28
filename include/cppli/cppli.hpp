@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "argument_container.hpp"
-#include "vendor/debug_utils.hpp"
+#include "help.hpp"
 #include "option.hpp"
 #include "parse_internal.hpp"
+#include "vendor/debug_utils.hpp"
 
 namespace cppli {
   struct OptionValue;

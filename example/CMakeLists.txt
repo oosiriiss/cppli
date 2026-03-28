@@ -11,3 +11,4 @@ function(Add_example name)
 endfunction()
 
 Add_example(example1)
+Add_example(help_example)

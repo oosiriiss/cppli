@@ -10,8 +10,11 @@ namespace cppli {
 
   // Option defined by user
   struct Option {
-    std::string_view firstName;
-    std::string_view secondName;
+    std::string firstName;
+    std::string secondName;
+
+    // description that will be used during help message generation
+    std::string description;
     bool needsValue = false;
   };
 
@@ -28,6 +31,9 @@ namespace cppli {
 
     [[nodiscard]] constexpr auto matchOptionByName(std::string_view name)
         const noexcept -> std::optional<std::pair<OptionKey, Option>>;
+
+    constexpr auto begin() const { return options_.begin(); }
+    constexpr auto end() const { return options_.end(); }
 
    private:
     Container options_;
