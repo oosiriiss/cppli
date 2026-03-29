@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <stdexcept>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
@@ -61,13 +62,17 @@ namespace cppli {
           }
         }
         // Names already taken
-        if (nameKeyTranslations_.contains(option.firstName) ||
-            nameKeyTranslations_.contains(option.secondName)) {
+        if (nameKeyTranslations_.contains(std::string_view{option.firstName}) ||
+            nameKeyTranslations_.contains(
+                std::string_view{option.secondName})) {
           if constexpr (std::formattable<OptionKey, char>) {
             OptionKey otherOptionKey =
-                (nameKeyTranslations_.contains(option.firstName))
-                    ? nameKeyTranslations_.at(option.firstName)
-                    : nameKeyTranslations_.at(option.secondName);
+                (nameKeyTranslations_.contains(
+                    std::string_view{option.firstName}))
+                    ? nameKeyTranslations_.at(
+                          std::string_view{option.firstName})
+                    : nameKeyTranslations_.at(
+                          std::string_view{option.secondName});
 
             throw std::invalid_argument(std::format(
                 "Option with key '{}' has defined a name ('{}' or "
@@ -78,12 +83,37 @@ namespace cppli {
                 "Option with given name ('{}' or '{}') was already defined",
                 option.firstName, option.secondName));
           }
+
+          // Unreachable option
+          if (option.firstName.empty() && option.secondName.empty()) {
+            if constexpr (std::formattable<OptionKey, char>) {
+              throw std::invalid_argument(
+                  std::format("Option with key '{}' has both firstName and "
+                              "secondName empty and "
+                              "cannot be reached.",
+                              key));
+            } else {
+              throw std::invalid_argument(
+                  "Option with empty firstName and secondName is considered "
+                  "invalid.");
+            }
+          }
         });
 
-    options_.emplace(key, option);
-    nameKeyTranslations_.emplace(option.firstName, key);
-    nameKeyTranslations_.emplace(option.secondName, key);
+    // Adding the option
 
+    options_.emplace(key, std::move(option));
+    Option& insertedOption = options_[key];
+
+    if (!insertedOption.firstName.empty()) {
+      nameKeyTranslations_.emplace(std::string_view{insertedOption.firstName},
+                                   key);
+    }
+
+    if (!insertedOption.secondName.empty()) {
+      nameKeyTranslations_.emplace(std::string_view{insertedOption.secondName},
+                                   key);
+    }
   }
 
   template <class OptionKey>
