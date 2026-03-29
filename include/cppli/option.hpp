@@ -50,37 +50,40 @@ namespace cppli {
     // TODO :: I am not sure if these checks should be debug only, but if the
     // future user would use this, these kinds of errors should only occur
     // during development, so no need to bloat the final executable?
-    DEBUG_ONLY(if (options_.contains(key)) {
-      if constexpr (std::formattable<OptionKey, char>) {
-        throw std::invalid_argument(
-            std::format("Attempted to define option with key {} twice.", key));
-      } else {
-        throw std::invalid_argument(
-            "Attepted to define option with the same key twice");
-      }
-    });
-    // Names already taken
-    DEBUG_ONLY(if (nameKeyTranslations_.contains(option.firstName) ||
-                   nameKeyTranslations_.contains(option.secondName)) {
-      if constexpr (std::formattable<OptionKey, char>) {
-        OptionKey otherOptionKey =
-            (nameKeyTranslations_.contains(option.firstName))
-                ? nameKeyTranslations_.at(option.firstName)
-                : nameKeyTranslations_.at(option.secondName);
-        throw std::invalid_argument(std::format(
-            "Option with key '{}' has defined a name ('{}' or "
-            "'{}') which was already used by option with key '{}'",
-            key, option.firstName, option.secondName, otherOptionKey));
-      } else {
-        throw std::invalid_argument(std::format(
-            "Option with given name ('{}' or '{}') was already defined",
-            option.firstName, option.secondName));
-      }
-    });
+    DEBUG_ONLY(
+        if (options_.contains(key)) {
+          if constexpr (std::formattable<OptionKey, char>) {
+            throw std::invalid_argument(std::format(
+                "Attempted to define option with key {} twice.", key));
+          } else {
+            throw std::invalid_argument(
+                "Attepted to define option with the same key twice");
+          }
+        }
+        // Names already taken
+        if (nameKeyTranslations_.contains(option.firstName) ||
+            nameKeyTranslations_.contains(option.secondName)) {
+          if constexpr (std::formattable<OptionKey, char>) {
+            OptionKey otherOptionKey =
+                (nameKeyTranslations_.contains(option.firstName))
+                    ? nameKeyTranslations_.at(option.firstName)
+                    : nameKeyTranslations_.at(option.secondName);
+
+            throw std::invalid_argument(std::format(
+                "Option with key '{}' has defined a name ('{}' or "
+                "'{}') which was already used by option with key '{}'",
+                key, option.firstName, option.secondName, otherOptionKey));
+          } else {
+            throw std::invalid_argument(std::format(
+                "Option with given name ('{}' or '{}') was already defined",
+                option.firstName, option.secondName));
+          }
+        });
 
     options_.emplace(key, option);
     nameKeyTranslations_.emplace(option.firstName, key);
     nameKeyTranslations_.emplace(option.secondName, key);
+
   }
 
   template <class OptionKey>

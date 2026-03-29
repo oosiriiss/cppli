@@ -1,15 +1,11 @@
 #pragma once
 #include "cppli/option.hpp"
+#include "cppli/terminal.hpp"
 
 namespace cppli {
 
   namespace internal {
     // All indents are in spaces.
-
-    inline auto getTerminalWidth() -> std::uint16_t {
-      // TODO :: platform specific impls
-      return 80;
-    }
 
     struct OutputBuffer {
       std::string data;
