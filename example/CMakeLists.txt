@@ -10,5 +10,5 @@ function(Add_example name)
    message("Registered ${name}")
 endfunction()
 
-Add_example(example1)
+Add_example(general)
 Add_example(help_example)
