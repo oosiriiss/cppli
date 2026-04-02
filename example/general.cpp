@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <iostream>
 #include <print>
 
 #include "cppli/cppli.hpp"
