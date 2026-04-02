@@ -16,11 +16,8 @@ include(FetchContent)
 FetchContent_Declare(
    tasty
    GIT_REPOSITORY https://github.com/oosiriiss/tasty
-   GIT_TAG 0.2.9.1
+   GIT_TAG 3b7b6b71e69882dad8961057b172f7e2aaebc524 # 0.2.11
 )
-
-
-
 FetchContent_MakeAvailable(tasty)
 
 function(Register_Test name)
