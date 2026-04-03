@@ -36,27 +36,27 @@ namespace cppli::internal {
       using difference_type = std::ptrdiff_t;                     // NOLINT
       using value_type = std::string_view;                        // NOLINT
 
-      ArgIterator() = default;
-      ArgIterator(const char* const* data)  // NOLINT
+      constexpr ArgIterator() = default;
+      constexpr ArgIterator(const char* const* data)  // NOLINT
           : data_(data) {}
 
-      [[nodiscard]] constexpr auto operator*() const -> value_type {
+      constexpr auto operator*() const -> value_type {
         return std::string_view(*data_);
       }
-      [[nodiscard]] constexpr auto operator++() -> ArgIterator& {
+      constexpr auto operator++() -> ArgIterator& {
         ++data_;
         return *this;
       }
-      [[nodiscard]] constexpr auto operator++(int) -> ArgIterator {
+      constexpr auto operator++(int) -> ArgIterator {
         ArgIterator temp = *this;
         ++data_;
         return temp;
       }
-      [[nodiscard]] constexpr auto operator--() -> ArgIterator& {
+      constexpr auto operator--() -> ArgIterator& {
         --data_;
         return *this;
       }
-      [[nodiscard]] constexpr auto operator--(int) -> ArgIterator {
+      constexpr auto operator--(int) -> ArgIterator {
         ArgIterator temp = *this;
         --data_;
         return temp;
