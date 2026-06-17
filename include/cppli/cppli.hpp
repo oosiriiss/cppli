@@ -12,7 +12,7 @@
 #include "help.hpp"
 #include "option.hpp"
 #include "parse_internal.hpp"
-#include "vendor/debug_utils.hpp"
+#include "debug_utils.hpp"
 
 namespace cppli {
   struct OptionValue;

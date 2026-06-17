@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "vendor/debug_utils.hpp"
+#include "debug_utils.hpp"
 
 namespace cppli {
 

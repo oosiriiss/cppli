@@ -3,7 +3,7 @@
 #include <iterator>
 #include <string_view>
 
-#include "vendor/debug_utils.hpp"
+#include "debug_utils.hpp"
 
 namespace cppli::internal {
   struct ArgumentContainer {
