@@ -51,7 +51,7 @@ namespace cppli {
     // TODO :: I am not sure if these checks should be debug only, but if the
     // future user would use this, these kinds of errors should only occur
     // during development, so no need to bloat the final executable?
-    DEBUG_ONLY(
+    CPPLI_DEBUG_ONLY(
         if (options_.contains(key)) {
           if constexpr (std::formattable<OptionKey, char>) {
             throw std::invalid_argument(std::format(
@@ -127,7 +127,7 @@ namespace cppli {
     if (translationIterator == nameKeyTranslations_.end()) {
       return std::nullopt;
     }
-    DEBUG_ASSERT(options_.contains(translationIterator->second),
+    CPPLI_DEBUG_ASSERT(options_.contains(translationIterator->second),
                  "Option must exist if translation was found");
     return std::pair{translationIterator->second,
                      options_.at(translationIterator->second)};

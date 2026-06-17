@@ -15,7 +15,7 @@ namespace cppli::internal {
     [[nodiscard]] constexpr auto operator[](size_t index) const
         -> std::string_view {
       // TODO :: debug only exception?
-      DEBUG_ONLY(if (index >= argc_ || index < 0) {
+      CPPLI_DEBUG_ONLY(if (index >= argc_ || index < 0) {
         throw std::invalid_argument("Argument index outside of bounds");
       });
       return argv_[index];

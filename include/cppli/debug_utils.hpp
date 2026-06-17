@@ -13,7 +13,7 @@ namespace cppli {
     constexpr bool DEBUG = false;  // NOLINT
   }  // namespace debugutils
 
-#define DEBUG_ONLY(...) __VA_ARGS__
+#define CPPLI_DEBUG_ONLY(...) __VA_ARGS__
 
   [[noreturn]] inline void handleAssertFail(
       std::string_view expr, std::string_view message,
@@ -30,12 +30,12 @@ namespace cppli {
     std::abort();
   }
 
-#define GET_FIRST(First, ...) First  // NOLINT
+#define CPPLI_GET_FIRST(First, ...) First  // NOLINT
 
-#define DEBUG_ASSERT(expr, ...) \
-  (static_cast<bool>(expr)      \
-       ? void(0)                \
-       : handleAssertFail(#expr, GET_FIRST(__VA_ARGS__ __VA_OPT__(, ) "")));
+#define CPPLI_DEBUG_ASSERT(expr, ...) \
+  (static_cast<bool>(expr)            \
+       ? void(0)                      \
+       : handleAssertFail(#expr, CPPLI_GET_FIRST(__VA_ARGS__ __VA_OPT__(, ) "")));
 
 }  // namespace cppli
 #else
@@ -45,7 +45,7 @@ namespace cppli {
     constexpr bool DEBUG = true;  // NOLINT
   }  // namespace debugutils
 
-#define DEBUG_ONLY(...)
-#define DEBUG_ASSERT(...)
+#define CPPLI_DEBUG_ONLY(...)
+#define CPPLI_DEBUG_ASSERT(...)
 }  // namespace cppli
 #endif

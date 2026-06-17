@@ -38,7 +38,7 @@ namespace cppli {
     constexpr void handlePositional(
         std::string_view positional, ParseResult<OptionKey>& result,
         std::optional<std::string_view>& lastPositional) noexcept {
-      DEBUG_ASSERT(classifyArgument(positional) ==
+      CPPLI_DEBUG_ASSERT(classifyArgument(positional) ==
                    internal::ArgType::Positional);
       // Previous positional argument was not used by option, so it is a real
       // positional argument and not a value for option
@@ -59,7 +59,7 @@ namespace cppli {
             value,  // Value will be set to nullopt if consumed
         const OptionContainer<OptionKey>& definedOptions,
         ParseResult<OptionKey>& result) {
-      DEBUG_ASSERT(classifyArgument(argument) == internal::ArgType::Option);
+      CPPLI_DEBUG_ASSERT(classifyArgument(argument) == internal::ArgType::Option);
       auto optionDataOpt = definedOptions.matchOptionByName(argument);
       if (!optionDataOpt) {
         throw std::runtime_error(std::format("Unknown option: '{}'", argument));
